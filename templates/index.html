@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <script src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="{{ url_for('static', filename='js/jquery.serializejson.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/funcs.js') }}"></script>
+        <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    </head>
+
+    <body>
+        <article id="main">
+            <section id="project-info">
+                <section id="project-loader">
+                    <h1>Choose a project</h1>
+                    <form id="project-picker">
+                        <label for="project-id">Project ID:</label>
+                        <input type="text" id="project-id" name="project-id">
+
+                        <input type="submit" value="Submit!">
+                    </form>
+                    <div id="project-name">
+                        &nbsp;
+                    </div>
+                </section>
+
+                <section id="subject-set-loader">
+                    <h1>Choose a subject set</h1>
+                    <form id="subject-set-picker">
+                        &nbsp;
+                    </form>
+                </section>
+            </section>
+
+            <section id="plotter">
+                <section id='plot-header'>
+                    <h1>Choose the plot type</h1>
+                    <nav id="plot-type">
+                        <span>
+                            <input type="radio" name="plot-type" class="plot-type" id="hist">
+                            <label for="hist" class="radio plot-type">Histogram</label>
+                        </span>
+                        <span>
+                            <input type="radio" name="plot-type" class="plot-type" id="scatter">
+                            <label for="scatter" class="radio plot-type">Scatter plot</label>
+                        </span>
+                        <span>
+                            <input type="radio" name="plot-type" class="plot-type" id="bar">
+                            <label for="bar" class="radio plot-type">Bar graph</label>
+                        </span>
+                    </nav>                    
+                </section>
+
+                <section id="variable-picker">
+                    <div id="hist-variable" class="variable-picker-container">
+                        <form id="hist-variables" class="plot-variable">
+                            <select name="hist-variable" id="hist-variable" class="variable-select">
+                                <option value="" disabled selected>Select a project and subject set!</option>
+                            </select>
+                            <input type="hidden" name="subject-set-id" id="subject-set-id">
+                            <input type="submit" value="Plot!">
+                        </form>
+                    </div>
+                    <div id="scatter-variable"  class="variable-picker-container">
+                        <form id="scatter-variables" class="plot-variable">
+                            <select name="scatter-variable-x" id="scatter-variable-x" class="variable-select">
+                                <option value="" disabled selected>Select a project and subject set!</option>
+                            </select>
+                            <select name="scatter-variable-y" id="scatter-variable-y" class="variable-select">
+                                <option value="" disabled selected>Select a project and subject set!</option>
+                            </select>
+                            <input type="hidden" id="subject-set-id" name="subject-set-id">
+                            <input type="submit" value="Plot!">
+                        </form>
+                    </div>
+                    <div id="bar-variable"  class="variable-picker-container">
+                        <form id="bar-variables" class="plot-variable">
+                            <select name="bar-variable" id="bar-variable" class="variable-select">
+                                <option value="" disabled selected>Select a project and subject set!</option>
+                            </select>
+                            <input type="hidden" id="subject-set-id" name="subject-set-id">
+                            <input type="submit" value="Plot!">
+                        </form>
+                    </div>
+                </section>
+
+                <section id="plot-container">
+                    <div id="plot">
+                        &nbsp;
+                    </div>
+                </section>
+            </section>
+            <!-- <div id="tester" style="width:600px;height:250px;"></div> -->
+        </article>
+    </body>
+</html>
