@@ -4,7 +4,7 @@
         <script src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="{{ url_for('static', filename='js/jquery.serializejson.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/funcs.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/dist/bundle.js') }}" defer></script>
         <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
     </head>
 
@@ -13,22 +13,31 @@
             <section id="project-info">
                 <section id="project-loader">
                     <h1>Choose a project</h1>
-                    <form id="project-picker">
+                    <!-- <form id="project-picker">
                         <label for="project-id">Project ID:</label>
                         <input type="text" id="project-id" name="project-id">
 
                         <input type="submit" value="Submit!">
-                    </form>
-                    <div id="project-name">
+                    </form> -->
+                    <div id="project-picker-container"></div>
+                    <div id="project-name"></div>
+                </section>
+
+                <section id="loading-container">
+                    <p>
+                        Loading...
+                    </p>
+                    <div id="loading-project">
                         &nbsp;
                     </div>
                 </section>
 
                 <section id="subject-set-loader">
                     <h1>Choose a subject set</h1>
-                    <form id="subject-set-picker">
+                    <!-- <form id="subject-set-picker">
                         &nbsp;
-                    </form>
+                    </form> -->
+                    <div id="subject-set-picker-container"></div>
                 </section>
             </section>
 

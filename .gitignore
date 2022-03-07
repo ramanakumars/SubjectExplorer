@@ -130,3 +130,7 @@ dmypy.json
 
 # ignore data
 *.csv
+
+# react installs
+*node_modules/
+*dist/

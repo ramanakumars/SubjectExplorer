@@ -17,19 +17,22 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-@app.route('/choose-project/', methods=['POST'])
-def get_project():
-    if request.method=='POST':
-        project_id = request.form['project-id']
-    elif request.method=='GET':
-        return 0
-    else:
-        return 0
+@app.route('/get-project-info/<project_id>', methods=['POST'])
+def get_project(project_id):
+    # if request.method=='POST':
+    #     project_id = request.form['project_id']
+    # elif request.method=='GET':
+    #     return 0
+    # else:
+    #     return 0
 
-    project = Project(project_id)
-    
-    name      = project.display_name
-    workflows = project.raw['links']['workflows']
+    try:
+        project   = Project(project_id)
+        name      = project.display_name
+        workflows = project.raw['links']['workflows']
+    except Exception as e:
+        print(e)
+        return json.dumps({"error": "No such project found"})
 
     subject_set_ids   = set([])
     for workflow_id in workflows:
@@ -89,8 +92,8 @@ def get_metadata_info(subject_set_id):
             typei = type(ast.literal_eval(sub0.raw['metadata'][key]))
             types.append(typei)
             metas.append(key)
-        except ValueError:
-            typei = 'string'
+        except (ValueError, SyntaxError):
+            print(f"Skipping {key}")
         
     return metas, types
 
