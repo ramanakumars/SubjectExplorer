@@ -19,13 +19,6 @@ def index():
 
 @app.route('/get-project-info/<project_id>', methods=['POST'])
 def get_project(project_id):
-    # if request.method=='POST':
-    #     project_id = request.form['project_id']
-    # elif request.method=='GET':
-    #     return 0
-    # else:
-    #     return 0
-
     try:
         project   = Project(project_id)
         name      = project.display_name
@@ -63,19 +56,12 @@ def get_project(project_id):
 
     return json.dumps(data)
 
-@app.route('/choose-subject-set/', methods=['POST'])
-def get_subject_set():
-    if request.method=='POST':
-        subject_set_id = int(request.form['subject-set'])
-    elif request.method=='GET':
-        return 0
-    else:
-        return 0
-
+@app.route('/choose-subject-set/<subject_set_id>', methods=['POST'])
+def get_subject_set(subject_set_id):
     print(subject_set_id)
-    metadata, types = get_metadata_info(subject_set_id)
+    variables, types = get_metadata_info(subject_set_id)
 
-    print(metadata)
+    metadata = {'variables': variables}
 
     return json.dumps(metadata)
 
@@ -101,13 +87,13 @@ def get_metadata_info(subject_set_id):
 def create_plot():
     print(request.json)
     if request.method=='POST':
-        subject_set_id = int(request.json['subject-set-id'])
+        subject_set_id = int(request.json['subject_set_id'])
         plot_type      = request.json['plot_type']
         if plot_type not in ['scatter']:
-            metadata_key   = request.json[f'{plot_type}-variable']
+            metadata_key   = request.json['x']
         else:
-            meta_x = request.json[f'{plot_type}-variable-x']
-            meta_y = request.json[f'{plot_type}-variable-y']
+            meta_x = request.json['x']
+            meta_y = request.json['y']
     elif request.method=='GET':
         return 0
     else:
@@ -115,13 +101,20 @@ def create_plot():
 
     subject_data = ascii.read(f'sset_{subject_set_id}_subjects.csv', format='csv')
 
+    layout = {}
+
+    urls = []
+
     if plot_type not in ['scatter']:
         values = []
 
         for subject in tqdm.tqdm(subject_data):
             values.append(ast.literal_eval(subject['metadata'])[metadata_key])
+            urls.append(ast.literal_eval(subject['locations'])["0"])
 
         output = {'x': values, 'type': plotly_type[plot_type]}
+
+        layout['xaxis'] = {'title': metadata_key}
     else:
         x = []
         y = []
@@ -129,9 +122,13 @@ def create_plot():
         for subject in tqdm.tqdm(subject_data):
             x.append(ast.literal_eval(subject['metadata'])[meta_x])
             y.append(ast.literal_eval(subject['metadata'])[meta_y])
+            urls.append(ast.literal_eval(subject['locations'])["0"])
+
+        layout['xaxis'] = {'title': meta_x}
+        layout['yaxis'] = {'title': meta_y}
 
         output = {'x': x,  'y': y, 'mode': 'markers', 'type': plotly_type[plot_type]}
-    return json.dumps(output)
+    return json.dumps({'data': output, 'layout': layout, 'subject_urls': urls})
 
 
 if __name__=='__main__':
