@@ -214,8 +214,8 @@ section#choose-plot-container {
 #plot-container {
     width: 100%;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
+    flex-wrap: nowrap;
+    justify-content: space-between;
     align-items: center;
     box-sizing: border-box;
 }
@@ -223,13 +223,11 @@ section#choose-plot-container {
 div#plot {
     width: 800px;
     height: 600px;
-    width: 65%;
     padding: 0px;
 }
 
 div#hover-image {
-    width: 30%;
-    margin: 0px;
+    margin: auto;
 }
 
 nav#plot-type {
@@ -265,7 +263,7 @@ div.subject-images-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    align-content: flex-start;
+    align-content: center;
 }
 
 div.subject-images-container span {
@@ -277,14 +275,12 @@ div.subject-images-container span {
 
 div.subject-images-container img {
     width: 100%;
-}
-
-div.subject-images-container-hover{
-    display: block;
-    padding: 0.25em;
+    max-width: 300px;
 }
 
 div.subject-images-container-hover span {
     max-width: 100%;
+    max-height: 100%;
     width: 100%;
+    display: block;
 }

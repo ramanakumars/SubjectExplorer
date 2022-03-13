@@ -246,7 +246,7 @@ class CreatePlotForm extends React.Component {
                 layout['width'] = 800;
                 layout['height'] = 600;
 
-                ReactDOM.render(<SubjectPlotter key={this.state.subject_set_id+"_"+this.state.plot_name} subject_set_id={this.state.subject_set_id} 
+                ReactDOM.render(<SubjectPlotter key={this.state.subject_set_id+"_"+this.state.plot_name+variables[0]} plot_name={this.state.plot_name} subject_set_id={this.state.subject_set_id} 
                     data={[plotly_meta.data]} layout={layout} variables={variables} subject_urls={plotly_meta.subject_urls} />,
                     document.getElementById('plot'));
 
@@ -312,14 +312,24 @@ class SubjectImages extends React.Component {
 
     render() {
         var urls = [];
-        for(var i=0; i<Math.min(this.state.subject_urls.length, 25); i++) {
+        var nmax = 25;
+        if(this.state.render_type=='hover') {
+            nmax = 6;
+        }
+        for(var i=0; i<Math.min(this.state.subject_urls.length, nmax); i++) {
             urls.push({idx: i, url: this.state.subject_urls[i]});
+        }
+
+        var style = {};
+        if(( urls.length > 1 )&(this.state.render_type=='hover')) {
+            style = {width: '28%'};
         }
 
         return (
             <div className={'subject-images-container subject-images-container-'+this.state.render_type}>
             {urls.map(url => (
-                <span key={this.state.render_type+"_"+url.url+"_span"} id={"subject_"+url.idx}>
+                <span key={this.state.render_type+"_"+url.url+"_span"} style={style} id={"subject_"+url.idx}>
+                    
                     <img key={this.state.render_type+"_"+url.url+"_img"} src={url.url} className='subject-image' />
                 </span>
             ))
@@ -338,7 +348,8 @@ class SubjectPlotter extends React.Component {
             layout: props.layout,
             variables: props.variables, 
             n_vars: props.variables.length, 
-            subject_urls: props.subject_urls  
+            subject_urls: props.subject_urls,
+            plot_name: props.plot_name
         };
 
         ReactDOM.render(<SubjectImages key={this.state.subject_set_id} subject_set_id={this.state.subject_set_id} 
@@ -354,9 +365,15 @@ class SubjectPlotter extends React.Component {
 
     handleHover(data) {
         var urls = [];
-        for(var i=0; i < data.points.length; i++){
-            urls.push(this.state.subject_urls[data.points[i].pointNumber]);
-        };
+        if(this.state.plot_name == 'hist') {
+            for(var i=0; i < data.points[0].pointNumbers.length; i++){
+                urls.push(this.state.subject_urls[data.points[0].pointNumbers[i]]);
+            };
+        } else if(this.state.plot_name=='scatter') {
+            for(var i=0; i < data.points.length; i++){
+                urls.push(this.state.subject_urls[data.points[i].pointNumber]);
+            };
+        }
 
         this.hoverimage.setState({subject_urls: urls});
     }
