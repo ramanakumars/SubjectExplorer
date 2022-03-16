@@ -306,17 +306,43 @@ class SubjectImages extends React.Component {
             n_vars: props.variables.length, 
             subject_urls: props.subject_urls,
             render_type: props.render_type,
-            hover_target: null
+			page: 0,
         };
+        
+		this.prevPage = this.prevPage.bind(this);
+		this.nextPage = this.nextPage.bind(this);
     }
 
+	prevPage(e) {
+		e.preventDefault();
+		if(this.state.page > 0) {
+			this.setState({page: this.state.page -1});
+		}
+	}
+
+	nextPage(e) {
+		e.preventDefault();
+		if(this.state.page < this.state.npages - 1) {
+			this.setState({page: this.state.page + 1});
+		}
+	}
+
     render() {
-        var urls = [];
-        var nmax = 25;
+		
+		var nmax = 25;
         if(this.state.render_type=='hover') {
             nmax = 6;
         }
-        for(var i=0; i<Math.min(this.state.subject_urls.length, nmax); i++) {
+
+
+		this.state.nimages = nmax;
+		this.state.npages = Math.ceil(this.state.subject_urls.length / nmax);
+
+        var urls = [];
+
+		const startind = this.state.page*this.state.nimages;
+
+        for(var i=startind; i<Math.min(this.state.subject_urls.length, startind+this.state.nimages); i++) {
             urls.push({idx: i, url: this.state.subject_urls[i]});
         }
 
@@ -327,13 +353,17 @@ class SubjectImages extends React.Component {
 
         return (
             <div className={'subject-images-container subject-images-container-'+this.state.render_type}>
-            {urls.map(url => (
-                <span key={this.state.render_type+"_"+url.url+"_span"} style={style} id={"subject_"+url.idx}>
-                    
-                    <img key={this.state.render_type+"_"+url.url+"_img"} src={url.url} className='subject-image' />
-                </span>
-            ))
-            }
+				<div className='image-page'>
+					<button onClick={this.prevPage}>&laquo;</button>
+						{this.state.page+1} / {this.state.npages}
+					<button onClick={this.nextPage}>&raquo;</button>
+				</div>
+				{urls.map(url => (
+					<span key={this.state.render_type+"_"+url.url+"_span"} style={style} id={"subject_"+url.idx}>
+						<img key={this.state.render_type+"_"+url.url+"_img"} src={url.url} className='subject-image' />
+					</span>
+				))
+				}
             </div>
         )
     }
@@ -360,7 +390,9 @@ class SubjectPlotter extends React.Component {
                 variables={this.state.variables} render_type={'hover'} subject_urls={[this.state.subject_urls[0]]} ref={SubjectImages => { this.hoverimage=SubjectImages }} />, 
                 document.getElementById('hover-image'));
 
-        this.handleHover = this.handleHover.bind(this);
+        this.handleHover  = this.handleHover.bind(this);
+        this.handleSelect = this.handleSelect.bind(this);
+        this.resetSelection = this.resetSelection.bind(this);
     }
 
     handleHover(data) {
@@ -375,13 +407,36 @@ class SubjectPlotter extends React.Component {
             };
         }
 
-        this.hoverimage.setState({subject_urls: urls});
+		this.hoverimage.setState({subject_urls: urls, page: 0});
     }
+    
+	handleSelect(data) {
+		if (data==undefined) {
+			return;
+		}
+
+        var urls = [];
+        if(this.state.plot_name == 'hist') {
+            for(var i=0; i < data.points[0].pointNumbers.length; i++){
+                urls.push(this.state.subject_urls[data.points[0].pointNumbers[i]]);
+            };
+        } else if(this.state.plot_name=='scatter') {
+            for(var i=0; i < data.points.length; i++){
+                urls.push(this.state.subject_urls[data.points[i].pointNumber]);
+            };
+        }
+
+		this.images.setState({subject_urls: urls, page: 0});
+    }
+
+	resetSelection() {
+		this.images.setState({subject_urls: this.state.subject_urls, page: 0});
+	}
 
     render() {
         return (
         <Plot data={this.state.data} layout={this.state.layout}
-            onHover={this.handleHover} />
+            onHover={this.handleHover} onSelected={this.handleSelect} onDeselect={this.resetSelection} />
         )
     }
 }
