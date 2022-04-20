@@ -43,16 +43,14 @@ def get_project(project_id):
 
     data = {'name': name, 'subject-set-ids': subject_set_ids, 'subject-set-names': subject_set_names}
 
-    if not os.path.exists(f'project_{project_id}_subjects.csv'):
-        print("Dowloading subject manifest file")
-        subprocess.run(['panoptes', 'project', 'download', '-t', 'subjects', project_id, f'project_{project_id}_subjects.csv'])
+    print("Dowloading subject manifest file")
+    subprocess.run(['panoptes', 'project', 'download', '-t', 'subjects', project_id, f'project_{project_id}_subjects.csv'])
 
     subject_data = ascii.read(f'project_{project_id}_subjects.csv', format='csv')
     subject_data['subject_set_id'].dtype=int
     for subject_set_id in subject_set_ids:
-        if not os.path.exists(f'sset_{subject_set_id}_subjects.csv'):
-            subjects = subject_data[subject_data['subject_set_id'][:]==int(subject_set_id)]
-            subjects.write(f'sset_{subject_set_id}_subjects.csv')
+        subjects = subject_data[subject_data['subject_set_id'][:]==int(subject_set_id)]
+        subjects.write(f'sset_{subject_set_id}_subjects.csv', overwrite=True)
 
     return json.dumps(data)
 

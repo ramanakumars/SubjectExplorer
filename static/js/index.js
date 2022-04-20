@@ -249,13 +249,6 @@ class CreatePlotForm extends React.Component {
                 ReactDOM.render(<SubjectPlotter key={this.state.subject_set_id+"_"+this.state.plot_name+variables[0]} plot_name={this.state.plot_name} subject_set_id={this.state.subject_set_id} 
                     data={[plotly_meta.data]} layout={layout} variables={variables} subject_urls={plotly_meta.subject_urls} />,
                     document.getElementById('plot'));
-
-                
-                // ReactDOM.render(<SubjectImages subject_set_id={this.state.subject_set_id} 
-                //     variables={variables} subject_urls={plotly_meta.subject_urls.slice(0,100)} />,
-                //     document.getElementById('images'));
-
-
             } else {
                 
             }
@@ -315,16 +308,21 @@ class SubjectImages extends React.Component {
 
 	prevPage(e) {
 		e.preventDefault();
+		e.stopPropagation();
 		if(this.state.page > 0) {
 			this.setState({page: this.state.page -1});
 		}
+
+		return false;
 	}
 
 	nextPage(e) {
 		e.preventDefault();
+		e.stopPropagation();
 		if(this.state.page < this.state.npages - 1) {
 			this.setState({page: this.state.page + 1});
 		}
+		return false;
 	}
 
     render() {
