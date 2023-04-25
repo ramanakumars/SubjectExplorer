@@ -1,0 +1,270 @@
+section#plot-info {
+    width: 20%;
+    margin: 0px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    align-content: flex-start;
+    background-color: var(--primary);
+    padding: 1.2em;
+    color: var(--bright-text);
+    box-sizing: border-box;
+    height: 100%;
+    overflow-y: hidden;
+}
+
+section#choose-plot-container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: flex-start;
+}
+
+form#hist-variables {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	align-content: center;
+	padding: 0.15em;
+}
+
+form#hist-variables span {
+	width: 80%;
+	text-align: center;
+	padding: 0.15em;
+}
+
+
+
+section#plotter {
+    overflow-y: auto;
+    margin: 0.25em;
+    padding: 0.25em;
+    box-sizing: border-box;
+}
+
+nav#plot-type {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav#plot-type span {
+    margin: 0px 2em;
+}
+
+label.plot-type:hover {
+    background-color: var(--tertiary);
+}
+
+#plotter {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#plot-container {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+div#plot {
+    width: 1200px;
+    height: 600px;
+    padding: 0px;
+	margin: auto;
+}
+
+nav#plot-type {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+nav#plot-type span {
+    width: 45%; 
+	height: 4em;
+    margin: 0.25em;
+    padding: 0px;
+	text-align: center;
+}
+
+section#images-container {
+    display: flex;
+    width: 100%;
+    padding-bottom: 5em;
+}
+
+
+div.subject-images-container {
+	width: 50%;
+	box-sizing: border-box;
+    margin: 0.5em;
+	padding: 0.5em;
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: flex-start;
+	border: 0.25em dashed #2e86c1;
+}
+
+div.subject-images-container span {
+    max-width: 150px;
+    max-height: 150px;
+    margin: 0.15em;
+    padding: 0.15em;
+}
+
+div.subject-images-container img {
+    width: 100%;
+    max-width: 300px;
+}
+
+div.subject-images-container-hover {
+	border: 0.25em dashed #922b21;
+}
+
+div.image-page {
+	width: 100%;
+	text-align: center;
+}
+
+div.image-page button {
+	line-height: 1.2em; 
+	margin: 0em 0.25em;
+	border: 0px;
+	background: var(--secondary);
+	cursor: pointer;
+}
+
+div.image-page button:hover {
+	background: var(--tertiary);
+}
+
+
+div#filter {
+	width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: text-start;
+}
+
+div#filter label {
+	width: 100%;
+}
+
+div#selector_checkbox {
+	padding: 1em;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+div#selector_checkbox input {
+
+}
+
+.multi-range-slider {
+	width: 100%;
+	border: 0px !important;
+	box-shadow: none !important;
+}
+
+div.multi-range-slider div.thumb::before {
+	background-color: var(--secondary) !important;
+	margin: -7px !important;
+	width: 20px !important;
+	height: 20px !important;
+	border: 0px !important;
+	box-shadow: none !important;
+}
+
+div.multi-range-slider div.bar-left, div.multi-range-slider div.bar-right {
+	background-color: var(--dark) !important;
+	box-shadow: none !important;
+}
+
+div.multi-range-slider div.min-value, div.multi-range-slider div.max-value {
+	background-color: white !important;
+	color: var(--dark-text) !important;
+	box-shadow: none !important;
+}
+
+div.multi-range-slider div.thumb {
+	background-color: white !important;
+	color: var(--dark-text) !important;
+	box-shadow: none !important;
+}
+
+
+.multi-range-slider .bar-inner {
+	background-color: var(--secondary) !important;
+	box-shadow: none !important;
+	border: 0px !important;
+}
+
+div.subject-export-container {
+	width: 100%;
+	box-sizing: border-box;
+	display: flex;
+	justify-content: center;
+	margin: 0.25em;
+}
+
+div.subject-export-container button {
+    width: 10rem;
+    line-height: 1.5rem;
+    font-family: Karla, Arial, Helvetica, sans-serif;
+    background-color: var(--secondary);
+    border: 0px;
+    cursor: pointer;
+    padding: 0.25em;
+    margin: 0.5em;
+}
+
+div.subject-export-container button:hover {
+    background-color: var(--tertiary);
+    /* color: var(--bright-text); */
+}
+
+form.upload {
+    display: block; 
+    max-width: 400px;
+}
+
+form.upload input {
+    display: block; 
+    float: left; 
+    margin: 5px;
+    font-size: 1.0em;
+}
+
+form.upload label {
+	width: 100%;
+}
+
+form.upload input[type=file] {
+    width: 100%;
+}
+
+form.upload input[type=file]::file-selector-button {
+	width: 5rem;
+	line-height: 1.5rem;
+	font-family: Karla, Arial, Helvetica, sans-serif;
+	background-color: var(--secondary);
+	border: 0px;
+	cursor: pointer;
+	padding: 0;
+}
+
+form.upload input[type=file]::file-selector-button:hover {
+	background-color: var(--tertiary);
+}
