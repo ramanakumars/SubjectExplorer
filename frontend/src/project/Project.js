@@ -1,7 +1,7 @@
 import React from "react";
 import LoadingPage from "../util/LoadingPage";
 import MainNav from "../util/Nav";
-import { getAvatarSrc, getWorkflowData } from "../util/zoo_utils"
+import { getAvatarSrc, getWorkflowData, getJSONData } from "../util/zoo_utils"
 
 
 export default class Project extends React.Component {
@@ -23,45 +23,39 @@ export default class Project extends React.Component {
 		this.getProjectData();
 	}
 
-	
+
 	getProjectData = () => {
 		this.loadingDiv.current.enable();
 
 		let avatar_src = getAvatarSrc(this.state.project_id);
 
-		fetch("https://www.zooniverse.org/api/projects/" + this.state.project_id, {
-			method: "GET",
-			headers: {
-				Accept: "application/vnd.api+json; version=1",
-				"Content-Type": "application/json",
-			}
-		}).then((result) => result.json())
-		  .then((data) => {
-			  let project_data = data.projects[0];
-			  Promise.all(project_data.links.active_workflows.map(
+		getJSONData("https://www.zooniverse.org/api/projects/" + this.state.project_id)
+		.then((data) => {
+			let project_data = data.projects[0];
+			Promise.all(project_data.links.active_workflows.map(
 				async (workflow_id) => getWorkflowData(workflow_id)
-				  .then((w_data) => {
-					  return w_data;
-				  })
-			  )).then((workflow_data) => {
-				  Promise.resolve(avatar_src).then((avatar_src) => {
-					  this.setState({
-						  name: project_data.display_name,
-						  logo: avatar_src,
-						  workflow_data: workflow_data
-					  }, this.loadingDiv.current.disable());
-				  });
-			  })
-		  });
+					.then((w_data) => {
+						return w_data;
+					})
+			)).then((workflow_data) => {
+				Promise.resolve(avatar_src).then((avatar_src) => {
+					this.setState({
+						name: project_data.display_name,
+						logo: avatar_src,
+						workflow_data: workflow_data
+					}, this.loadingDiv.current.disable());
+				});
+			})
+		});
 	}
 
 	render() {
 		return (
-            <article id="main">
-                <MainNav />
+			<article id="main">
+				<MainNav />
 				<LoadingPage
 					ref={this.loadingDiv}
-					enable={false} 
+					enable={false}
 				/>
 
 				<section id='workflow-data'>
@@ -75,7 +69,7 @@ export default class Project extends React.Component {
 						/>
 					))}
 				</section>
-            </article>
+			</article>
 
 		);
 	}
