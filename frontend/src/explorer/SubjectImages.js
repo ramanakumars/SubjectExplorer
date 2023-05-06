@@ -1,6 +1,6 @@
 import React from "react";
 import LoadingPage from "../util/LoadingPage.js";
-import SubjectImage from '../subject/SubjectImage.js'
+import Subject from '../subject/Subject.js'
 
 
 export default class SubjectImages extends React.Component {
@@ -45,7 +45,7 @@ export default class SubjectImages extends React.Component {
     }
 
     getExport() {
-		var postdata = { subject_IDs: this.state.subject_data.map((data) => data.subject_ID) };
+        var postdata = { subject_IDs: this.state.subject_data.map((data) => data.subject_ID) };
 
         this.loading_page.current.enable();
 
@@ -93,7 +93,7 @@ export default class SubjectImages extends React.Component {
             return null;
         }
 
-		this.npages = Math.ceil(this.state.subject_data.length / this.state.nimages);
+        this.npages = Math.ceil(this.state.subject_data.length / this.state.nimages);
 
         var subject_data = [];
 
@@ -105,12 +105,7 @@ export default class SubjectImages extends React.Component {
             i++
         ) {
             subject_data.push({
-                idx: i,
-                url: this.state.subject_data[i].url,
-                subject_ID: this.state.subject_data[i].subject_ID,
-                longitude: this.state.subject_data[i].longitude,
-                latitude: this.state.subject_data[i].latitude,
-                perijove: this.state.subject_data[i].perijove
+                ...this.state.subject_data[i]
             });
         }
 
@@ -127,7 +122,7 @@ export default class SubjectImages extends React.Component {
                 key={rand_key}
                 className={
                     "subject-images-container subject-images-container-" +
-                    this.state.render_type
+                        this.state.render_type
                 }
             >
                 <div className="image-page">
@@ -136,10 +131,9 @@ export default class SubjectImages extends React.Component {
                     <button onClick={this.nextPage}>&raquo;</button>
                 </div>
                 {subject_data.map(data => (
-                    <SubjectImage
+                    <Subject
                         key={data.subject_ID + "_" + this.state.render_type}
-                        url={data.url}
-						metadata={data}
+                        metadata={data}
                         style={style}
                     />
                 ))}

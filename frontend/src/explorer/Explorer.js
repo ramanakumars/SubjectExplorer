@@ -7,12 +7,12 @@ import LoadingPage from "../util/LoadingPage.js";
 
 
 class Explorer extends React.Component {
-    /*
-     * Main explorer app. Creates the forms for choosing plot type and variables
-     * and also the subsequent display for the plot and the subject images
-     */
-    constructor(props) {
-        super(props);
+	/*
+	 * Main explorer app. Creates the forms for choosing plot type and variables
+	 * and also the subsequent display for the plot and the subject images
+	 */
+	constructor(props) {
+		super(props);
 
 		this.state = {
 			id: props.id,
@@ -20,22 +20,22 @@ class Explorer extends React.Component {
 			variables: []
 		};
 
-        // create references for the child components
-        this.subject_plotter = React.createRef();
+		// create references for the child components
+		this.subject_plotter = React.createRef();
 		this.plot_control = React.createRef();
 		this.loadingDiv = React.createRef();
 
-        // handleSubmit will handle the "Plot!" click button
-        this.handleSubmit = this.handleSubmit.bind(this);
+		// handleSubmit will handle the "Plot!" click button
+		this.handleSubmit = this.handleSubmit.bind(this);
 
-        // filter will handle the slider for perijove filtering and
-        // "vortex only" selection
-        this.filter = this.filter.bind(this);
-    }
+		// filter will handle the slider for perijove filtering and
+		// "vortex only" selection
+		this.filter = this.filter.bind(this);
+	}
 
 	componentDidMount() {
 		this.loadingDiv.current.enable();
-		this.loadingDiv.current.setState({text: 'Getting subjects...'});
+		this.loadingDiv.current.setState({ text: 'Getting subjects...' });
 		if (this.state.type === "workflow") {
 			getWorkflowData(this.state.id).then((data) => {
 				getSubjects(this.state.id).then((subjects_data) => {
@@ -58,7 +58,7 @@ class Explorer extends React.Component {
 							'dtypes': dtypes
 						});
 						this.loadingDiv.current.disable();
-					});	
+					});
 				});
 			});
 		}
@@ -95,28 +95,28 @@ class Explorer extends React.Component {
 		});
 	}
 
-    handleSubmit(event) {
-        /*
-         * handles the "Plot!" click by fetching the relevant
-         * data from the child component forms
-         * and sending to the backend API to retrieve the subject metadata
-         * (i.e. lat, lon, PJ, ID, url, etc.)
-         */
-        event.preventDefault();
+	handleSubmit(event) {
+		/*
+		 * handles the "Plot!" click by fetching the relevant
+		 * data from the child component forms
+		 * and sending to the backend API to retrieve the subject metadata
+		 * (i.e. lat, lon, PJ, ID, url, etc.)
+		 */
+		event.preventDefault();
 
-        // start building the data structure to send to the backend
-        var plot_type = this.plot_control.current.state.chosen;
+		// start building the data structure to send to the backend
+		var plot_type = this.plot_control.current.state.chosen;
 
-        const chosen_vars = var_names[plot_type];
+		const chosen_vars = var_names[plot_type];
 
-        // get a list of chosen variables from the form elements
+		// get a list of chosen variables from the form elements
 		var plot_variables = {};
-        for (var i = 0; i < chosen_vars.length; i++) {
-            if (event.target.elements[chosen_vars[i]].value === "") {
-                return;
-            }
-            plot_variables[chosen_vars[i]] = event.target.elements[chosen_vars[i]].value;
-        }
+		for (var i = 0; i < chosen_vars.length; i++) {
+			if (event.target.elements[chosen_vars[i]].value === "") {
+				return;
+			}
+			plot_variables[chosen_vars[i]] = event.target.elements[chosen_vars[i]].value;
+		}
 
 		var layout = {};
 		layout["hovermode"] = "closest";
@@ -124,13 +124,13 @@ class Explorer extends React.Component {
 		layout["height"] = 600;
 
 		if (plot_type === "hist") {
-			layout["xaxis"] = {"title": plot_variables['x']}
+			layout["xaxis"] = { "title": plot_variables['x'] }
 		} else if (plot_type === "scatter") {
-			layout["xaxis"] = {"title": plot_variables['x']}
-			layout["yaxis"] = {"title": plot_variables['y']}
+			layout["xaxis"] = { "title": plot_variables['x'] }
+			layout["yaxis"] = { "title": plot_variables['y'] }
 		}
 
-        // send to the backend
+		// send to the backend
 		let vars = this.plot_control.current.get_int_bool_vars();
 		this.subject_plotter.current.set_data(
 			plot_variables,
@@ -139,52 +139,52 @@ class Explorer extends React.Component {
 			vars[0],
 			vars[1]
 		);
-    }
+	}
 
 	handleFileUpload = (e) => {
 		var data = new FormData();
 		data.append('umap', e.target[0].files[0]);
 
-        fetch("/backend/upload-umap/", {
-            method: "POST",
+		fetch("/backend/upload-umap/", {
+			method: "POST",
 			body: data
-        }).then((result) => result.json()).then((data) => {
+		}).then((result) => result.json()).then((data) => {
 			// get the subject metadata and the list of variables
 			// from the backend API
 			this.refreshData(data);
 		});
-		
+
 	}
 
-    filter(int_vars, bool_vars) {
-        /*
-         * handles the perijove slider for filtering the displayed data
-         */
+	filter(int_vars, bool_vars) {
+		/*
+		 * handles the perijove slider for filtering the displayed data
+		 */
 
-        // this is handled mainly by the plotter component since that is where
-        // the data is stored
-        this.subject_plotter.current.filter(int_vars, bool_vars);
-    }
+		// this is handled mainly by the plotter component since that is where
+		// the data is stored
+		this.subject_plotter.current.filter(int_vars, bool_vars);
+	}
 
-    render() {
-        document.title = "JuDE explorer";
-        return (
-            <article id="main">
-                <MainNav target="explore" />
+	render() {
+		document.title = "JuDE explorer";
+		return (
+			<article id="main">
+				<MainNav target="explore" />
 				<LoadingPage ref={this.loadingDiv} enable={false} />
-                <section id="app">
-					<PlotControl 
-						ref={ this.plot_control }
-						filter={ this.filter }
+				<section id="app">
+					<PlotControl
+						ref={this.plot_control}
+						filter={this.filter}
 						variables={{}}
-						handleFileUpload={ this.handleFileUpload }
-						handleSubmit={ this.handleSubmit } 
+						handleFileUpload={this.handleFileUpload}
+						handleSubmit={this.handleSubmit}
 					/>
-                    <PlotContainer ref={ this.subject_plotter } />
-                </section>
-            </article>
-        );
-    }
+					<PlotContainer ref={this.subject_plotter} />
+				</section>
+			</article>
+		);
+	}
 }
 
 export default Explorer;

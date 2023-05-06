@@ -2,7 +2,7 @@ import React from "react";
 import SubjectImages from './SubjectImages.js'
 import Plot from "react-plotly.js";
 
-const plotly_type = {'hist': 'histogram', 'scatter': 'scattergl'};
+const plotly_type = { 'hist': 'histogram', 'scatter': 'scattergl' };
 export const blue = "#2e86c1";
 export const red = "#922b21";
 
@@ -34,35 +34,37 @@ export default class PlotContainer extends React.Component {
          * `set_plot_data` to set the plotly data
          */
 
-		var data = {}
-		if(plot_type === "hist") {
-			var metadata_key = plot_variables['x']
+        var data = {}
+        if (plot_type === "hist") {
+            var metadata_key = plot_variables['x']
 
-			var values = this.state.subject_data.map((data) => (
-				data[metadata_key]
-			));
+            var values = this.state.subject_data.map((data) => (
+                data[metadata_key]
+            ));
 
-			var binstart = Math.floor(Math.min(...values));
-			var binend = Math.ceil(Math.max(...values));
-			var nbins = 50;
-			var binwidth = (binend - binstart) / nbins;
+            var binstart = Math.floor(Math.min(...values));
+            var binend = Math.ceil(Math.max(...values));
+            var nbins = 50;
+            var binwidth = (binend - binstart) / nbins;
 
-			data = {'x': values, 'type': plotly_type[plot_type],
-				'xbins': {'start': binstart, 'end': binend, 'size': binwidth},
-				'nbinsx': nbins, 
-				'marker': {'color': Array(nbins).fill(blue) }
-			};
-		} else if (plot_type === "scatter") {
-			var data_x = this.state.subject_data.map((data) => (
-				data[plot_variables['x']]));
-			var data_y = this.state.subject_data.map((data) => (
-				data[plot_variables['y']]));
-			
-			data = {'x': data_x, 'y': data_y, 'mode': 'markers',
-				'type': plotly_type[plot_type],
-				'marker': {'color': Array(data_x.length).fill("dodgerblue")}
-			};
-		}
+            data = {
+                'x': values, 'type': plotly_type[plot_type],
+                'xbins': { 'start': binstart, 'end': binend, 'size': binwidth },
+                'nbinsx': nbins,
+                'marker': { 'color': Array(nbins).fill(blue) }
+            };
+        } else if (plot_type === "scatter") {
+            var data_x = this.state.subject_data.map((data) => (
+                data[plot_variables['x']]));
+            var data_y = this.state.subject_data.map((data) => (
+                data[plot_variables['y']]));
+
+            data = {
+                'x': data_x, 'y': data_y, 'mode': 'markers',
+                'type': plotly_type[plot_type],
+                'marker': { 'color': Array(data_x.length).fill("dodgerblue") }
+            };
+        }
 
         this.setState(
             {
@@ -70,7 +72,7 @@ export default class PlotContainer extends React.Component {
                 layout: layout,
                 plot_name: plot_type,
             },
-            function () {
+            function() {
                 this.filter(int_vars, bool_vars);
             }
         );
@@ -129,36 +131,36 @@ export default class PlotContainer extends React.Component {
 
         // copy over the data for the given perijove range
         for (var i = 0; i < this.state.subject_data.length; i++) {
-			let metadata = this.state.subject_data[i];
-			let skip_row = false;
-			for (let variable in metadata) {
-				if (variable in int_vars) {
-					if (
-						(metadata[variable] < int_vars[variable].currentMin) || (metadata[variable] > int_vars[variable].currentMax)
-					) {
-						skip_row = true;
-						break;
-					}
-				}
+            let metadata = this.state.subject_data[i];
+            let skip_row = false;
+            for (let variable in metadata) {
+                if (variable in int_vars) {
+                    if (
+                        (metadata[variable] < int_vars[variable].currentMin) || (metadata[variable] > int_vars[variable].currentMax)
+                    ) {
+                        skip_row = true;
+                        break;
+                    }
+                }
 
-				if (variable in bool_vars) {
-					if ((bool_vars[variable].checked) & (!metadata[variable])) {
-						skip_row = true;
-						break;
-					}
-				}
-			}
+                if (variable in bool_vars) {
+                    if ((bool_vars[variable].checked) & (!metadata[variable])) {
+                        skip_row = true;
+                        break;
+                    }
+                }
+            }
 
-			if (skip_row) {
-				continue;
-			}
+            if (skip_row) {
+                continue;
+            }
 
-			data.x.push(this.state.data.x[i]);
-			subject_data.push(this.state.subject_data[i]);
+            data.x.push(this.state.data.x[i]);
+            subject_data.push(this.state.subject_data[i]);
 
-			if ("y" in this.state.data) {
-				data.y.push(this.state.data.y[i]);
-			}
+            if ("y" in this.state.data) {
+                data.y.push(this.state.data.y[i]);
+            }
         }
 
         // refresh the plot
@@ -235,7 +237,7 @@ class SubjectPlotter extends React.Component {
 
     handleHover(event_data) {
         var data = [];
-		var colors = [];
+        var colors = [];
         if (this.state.plot_name === "hist") {
             var binNumber = [];
             for (var i = 0; i < event_data.points[0].pointNumbers.length; i++) {
