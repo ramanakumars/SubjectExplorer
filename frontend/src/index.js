@@ -43,7 +43,7 @@ class ProjectButton extends React.Component {
 
     render() {
         return (
-            <a href={"/project/" + this.state.id}>
+            <a href={"/explore/project/" + this.state.id}>
                 <div className='project-button'>
                     <span>{this.state.name}</span>
                     <img src={this.state.logo} className="project-button-img" alt={this.state.name + " logo"} />

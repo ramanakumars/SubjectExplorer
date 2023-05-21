@@ -32,7 +32,7 @@ export default class Project extends React.Component {
 		getJSONData("https://www.zooniverse.org/api/projects/" + this.state.project_id)
 		.then((data) => {
 			let project_data = data.projects[0];
-			Promise.all(project_data.links.active_workflows.map(
+			Promise.all(project_data.links.workflows.map(
 				async (workflow_id) => getWorkflowData(workflow_id)
 					.then((w_data) => {
 						return w_data;

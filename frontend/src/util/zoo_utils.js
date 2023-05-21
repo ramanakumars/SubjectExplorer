@@ -59,6 +59,10 @@ export const getSubjects = async (workflow_id) => {
 	return getJSONData('/backend/get-workflow-subjects/' + workflow_id);
 }
 
+export const getSubjectsFromProject = async (project_id) => {
+	return getJSONData('/backend/get-project-subjects/' + project_id);
+}
+
 
 export const getSubjectsOld = async (subject_sets) => {
 	let promises = subject_sets.map(async (subject_set) => {

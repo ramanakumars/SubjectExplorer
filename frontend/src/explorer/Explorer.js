@@ -2,7 +2,7 @@ import React from "react";
 import MainNav from "../util/Nav.js";
 import PlotContainer from './PlotContainer.js'
 import PlotControl, { var_names } from './PlotControl.js'
-import { getWorkflowData, getSubjects } from "../util/zoo_utils.js";
+import { getWorkflowData, getSubjects, getSubjectsFromProject } from "../util/zoo_utils.js";
 import LoadingPage from "../util/LoadingPage.js";
 
 
@@ -61,6 +61,26 @@ class Explorer extends React.Component {
 					});
 				});
 			});
+		} else if (this.state.type === "project") {
+			getSubjectsFromProject(this.state.id).then((subjects_data) => {
+				console.log(subjects_data);
+
+				let subjects = subjects_data.subjects;
+				let variables = subjects_data.variables;
+				let dtypes = subjects_data.dtypes;
+
+				this.setState({
+					subjects: subjects,
+					subject_count: subjects.length
+				}, () => {
+					this.refreshData({
+						'subject_data': subjects,
+						'variables': variables,
+						'dtypes': dtypes
+					});
+					this.loadingDiv.current.disable();
+				});
+			});			
 		}
 	}
 
