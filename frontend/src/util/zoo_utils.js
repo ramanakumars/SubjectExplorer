@@ -8,6 +8,7 @@ const getImageUrl = (media) => {
 			return url['image/jpeg'];
 		} else {
 			console.log(url);
+			return null;
 		}
 	});
 }
