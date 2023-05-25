@@ -7,145 +7,7 @@ export const var_names = {
 	scatter: ["x", "y"],
 };
 
-export default class PlotControl extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			variables: props.variables,
-			chosen: "hist",
-		}
-
-		this.choose_plot_form = React.createRef();
-		this.variable_form = React.createRef();
-		this.metadata_upload = React.createRef();
-
-		this.handleSubmit = this.handleSubmit.bind(this);
-		this.handleChange = this.handleChange.bind(this);
-		this.filter = this.filter.bind(this);
-	}
-
-	handleSubmit(event) {
-		this.props.handleSubmit(event);
-	}
-
-	handleChange(data) {
-		this.setState({ chosen: data.chosen });
-	}
-
-	get_int_bool_vars() {
-		/*
-		 * get the integer (slider filter) and boolean (checkbox filter)
-		 * variables and their corresponding filter data. This will be passed
-		 * to the PlotContainer class to filter the plotly data
-		 */
-		var int_vars = {};
-		var bool_vars = {};
-		for (let key in this.state.variables) {
-			var variable = this.state.variables[key];
-			if (variable.dtype.includes('int')) {
-				int_vars[key] = variable;
-			}
-			if (variable.dtype.includes('bool')) {
-				bool_vars[key] = variable;
-			}
-		}
-
-		return [int_vars, bool_vars];
-	}
-
-	filter(update) {
-		/*
-		 * driver function to get the updated data and modify the state
-		 * this will then call the super filter method to update the plot
-		 */
-		let state = { ...this.state };
-		let update_variable = update.variable;
-
-		if (state.variables[update_variable].dtype.includes('int')) {
-			state.variables[update_variable].currentMin = update.currentMin;
-			state.variables[update_variable].currentMax = update.currentMax;
-		} else if (state.variables[update_variable].dtype.includes('bool')) {
-			state.variables[update_variable].checked = update.checked;
-		}
-
-		this.setState(state, function() {
-			let vars = this.get_int_bool_vars();
-			this.props.filter(vars[0], vars[1]);
-		});
-	}
-
-	componentDidUpdate() {
-		/*
-		 * get the updated variable data
-		 */
-		this.choose_plot_form.current.setState({
-			'variables': this.state.variables,
-		});
-		this.variable_form.current.setState({
-			'variables': this.state.variables,
-		});
-	}
-
-	render() {
-		var int_vars = [];
-		var bool_vars = [];
-
-		for (let key in this.state.variables) {
-			var variable = this.state.variables[key];
-			if (variable.dtype.includes('int')) {
-				int_vars.push(key);
-			}
-			if (variable.dtype.includes('bool')) {
-				bool_vars.push(key);
-			}
-		}
-
-		return (
-			<section id="plot-info">
-				<section id="choose-plot-container">
-					<ChoosePlotType
-						ref={this.choose_plot_form}
-						variables={this.state.variables}
-						handleChange={this.handleChange}
-					/>
-					<CreatePlotForm
-						variables={this.state.variables}
-						key={this.state.chosen + this.state.variables}
-						plot_name={this.state.chosen}
-						var_names={var_names[this.state.chosen]}
-						ref={this.variable_form}
-						onSubmit={this.handleSubmit}
-					/>
-				</section>
-				{int_vars.map((v) => (
-					<Subset
-						key={v + "_range"}
-						variable={v}
-						minValue={this.state.variables[v].minValue}
-						maxValue={this.state.variables[v].maxValue}
-						onChange={this.filter}
-					/>
-				))
-				}
-				{bool_vars.map((v) => (
-					<Selector
-						key={v + "_selector"}
-						variable={v}
-						checked={this.state.variables[v].checked}
-						onChange={this.filter}
-					/>
-				))
-				}
-				<MetadataUpload
-					ref={this.metadata_upload}
-					onSubmit={this.props.handleFileUpload}
-				/>
-			</section>
-		)
-	}
-}
-
-class ChoosePlotType extends React.Component {
+export class ChoosePlotType extends React.Component {
 	/*
 	 * Form for choosing the type of plot (currently Histogram and Scatter)
 	 * will automatically create the subsequent form to choose the required variables
@@ -203,7 +65,7 @@ class ChoosePlotType extends React.Component {
 	}
 }
 
-class CreatePlotForm extends React.Component {
+export class CreatePlotForm extends React.Component {
 	constructor(props) {
 		super(props);
 		// this.state = {};
@@ -289,7 +151,7 @@ class CreatePlotForm extends React.Component {
 	}
 }
 
-class Subset extends React.Component {
+export class Subset extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -329,7 +191,7 @@ class Subset extends React.Component {
 	}
 }
 
-class Selector extends React.Component {
+export class Selector extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -363,4 +225,21 @@ class Selector extends React.Component {
 }
 
 
+export class PlotConfigure extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			type: props.type
+		}
+	}
 
+	render() {
+		return (
+			<div id='configure-plot'>
+				{this.state.type === 'hist' &&
+					<input type='numeric' name='histmin' defaultValue={this.state.variable.min}/>
+				}
+			</div>
+		)
+	}
+}

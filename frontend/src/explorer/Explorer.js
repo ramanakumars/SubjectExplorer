@@ -1,7 +1,7 @@
 import React from "react";
 import MainNav from "../util/Nav.js";
 import PlotContainer from './PlotContainer.js'
-import PlotControl, { var_names } from './PlotControl.js'
+import { CreatePlotForm, ChoosePlotType, Subset, Selector, PlotConfigure, var_names } from './PlotControl'
 import { getWorkflowData, getSubjects, getSubjectsFromProject } from "../util/zoo_utils.js";
 import LoadingPage from "../util/LoadingPage.js";
 
@@ -17,31 +17,75 @@ class Explorer extends React.Component {
 		this.state = {
 			id: props.id,
 			type: props.type,
-			variables: []
+			variables: [],
+			chosen: "hist"
 		};
 
 		// create references for the child components
 		this.subject_plotter = React.createRef();
-		this.plot_control = React.createRef();
 		this.loadingDiv = React.createRef();
-
-		// handleSubmit will handle the "Plot!" click button
-		this.handleSubmit = this.handleSubmit.bind(this);
+		
+		// plot controllers
+		this.choose_plot_form = React.createRef();
+		this.variable_form = React.createRef();
+		this.metadata_upload = React.createRef();
+		this.plot_configurator = React.createRef();
 
 		// filter will handle the slider for perijove filtering and
 		// "vortex only" selection
 		this.filter = this.filter.bind(this);
 	}
+	
+	get_int_bool_vars = () => {
+		/*
+		 * get the integer (slider filter) and boolean (checkbox filter)
+		 * variables and their corresponding filter data. This will be passed
+		 * to the PlotContainer class to filter the plotly data
+		 */
+		var int_vars = {};
+		var bool_vars = {};
+		for (let key in this.state.variables) {
+			var variable = this.state.variables[key];
+			if (variable.dtype.includes('int')) {
+				int_vars[key] = variable;
+			}
+			if (variable.dtype.includes('bool')) {
+				bool_vars[key] = variable;
+			}
+		}
 
-	componentDidMount() {
+		return [int_vars, bool_vars];
+	}
+
+	filter = (update) => {
+		/*
+		 * driver function to get the updated data and modify the state
+		 * this will then call the super filter method to update the plot
+		 */
+		let state = { ...this.state };
+		let update_variable = update.variable;
+
+		if (state.variables[update_variable].dtype.includes('int')) {
+			state.variables[update_variable].currentMin = update.currentMin;
+			state.variables[update_variable].currentMax = update.currentMax;
+		} else if (state.variables[update_variable].dtype.includes('bool')) {
+			state.variables[update_variable].checked = update.checked;
+		}
+
+		this.setState(state, function() {
+			let vars = this.get_int_bool_vars();
+			// this is handled mainly by the plotter component since that is where
+			// the data is stored
+			this.subject_plotter.current.filter(vars[0], vars[1]);
+		});
+	}
+
+	componentDidMount = () => {
 		this.loadingDiv.current.enable();
 		this.loadingDiv.current.setState({ text: 'Getting subjects...' });
 		if (this.state.type === "workflow") {
 			getWorkflowData(this.state.id).then((data) => {
 				getSubjects(this.state.id).then((subjects_data) => {
-
-					console.log(subjects_data);
-
 					let subjects = subjects_data.subjects;
 					let variables = subjects_data.variables;
 					let dtypes = subjects_data.dtypes;
@@ -63,8 +107,6 @@ class Explorer extends React.Component {
 			});
 		} else if (this.state.type === "project") {
 			getSubjectsFromProject(this.state.id).then((subjects_data) => {
-				console.log(subjects_data);
-
 				let subjects = subjects_data.subjects;
 				let variables = subjects_data.variables;
 				let dtypes = subjects_data.dtypes;
@@ -80,7 +122,7 @@ class Explorer extends React.Component {
 					});
 					this.loadingDiv.current.disable();
 				});
-			});			
+			});
 		}
 	}
 
@@ -91,11 +133,10 @@ class Explorer extends React.Component {
 			'dtypes': data.dtypes
 		});
 
-		console.log(data);
-
 		var variable_data = {};
 
 		variable_data = Object.fromEntries(data.variables.map((variable) => {
+			console.log('Getting info for ' + variable);
 			let var_data = {};
 			var_data['dtype'] = data.dtypes[variable];
 
@@ -110,12 +151,17 @@ class Explorer extends React.Component {
 			return [variable, var_data];
 		}));
 
-		this.plot_control.current.setState({
-			'variables': variable_data
+		// set the update variable data
+		this.setState({variables: variable_data});
+		this.choose_plot_form.current.setState({
+			'variables': variable_data,
+		});
+		this.variable_form.current.setState({
+			'variables': variable_data,
 		});
 	}
 
-	handleSubmit(event) {
+	handleSubmit = (event) => {
 		/*
 		 * handles the "Plot!" click by fetching the relevant
 		 * data from the child component forms
@@ -125,7 +171,7 @@ class Explorer extends React.Component {
 		event.preventDefault();
 
 		// start building the data structure to send to the backend
-		var plot_type = this.plot_control.current.state.chosen;
+		var plot_type = this.state.chosen;
 
 		const chosen_vars = var_names[plot_type];
 
@@ -137,6 +183,8 @@ class Explorer extends React.Component {
 			}
 			plot_variables[chosen_vars[i]] = event.target.elements[chosen_vars[i]].value;
 		}
+
+		this.setState({plot_variables: plot_variables});
 
 		var layout = {};
 		layout["hovermode"] = "closest";
@@ -151,7 +199,7 @@ class Explorer extends React.Component {
 		}
 
 		// send to the backend
-		let vars = this.plot_control.current.get_int_bool_vars();
+		let vars = this.get_int_bool_vars();
 		this.subject_plotter.current.set_data(
 			plot_variables,
 			layout,
@@ -160,6 +208,11 @@ class Explorer extends React.Component {
 			vars[1]
 		);
 	}
+	
+	handleChange = (data) => {
+		this.setState({ chosen: data.chosen });
+	}
+
 
 	handleFileUpload = (e) => {
 		var data = new FormData();
@@ -176,30 +229,55 @@ class Explorer extends React.Component {
 
 	}
 
-	filter(int_vars, bool_vars) {
-		/*
-		 * handles the perijove slider for filtering the displayed data
-		 */
-
-		// this is handled mainly by the plotter component since that is where
-		// the data is stored
-		this.subject_plotter.current.filter(int_vars, bool_vars);
-	}
-
 	render() {
 		document.title = "JuDE explorer";
+		
+
+		var [int_vars, bool_vars] = this.get_int_bool_vars();
+		int_vars = Object.keys(int_vars);
+		bool_vars = Object.keys(bool_vars);
+
 		return (
 			<article id="main">
 				<MainNav target="explore" />
 				<LoadingPage ref={this.loadingDiv} enable={false} />
 				<section id="app">
-					<PlotControl
-						ref={this.plot_control}
-						filter={this.filter}
-						variables={{}}
-						handleFileUpload={this.handleFileUpload}
-						handleSubmit={this.handleSubmit}
-					/>
+					<section id="plot-info">
+						<section id="choose-plot-container">
+							<ChoosePlotType
+								ref={this.choose_plot_form}
+								variables={this.state.variables}
+								handleChange={this.handleChange}
+							/>
+							<CreatePlotForm
+								variables={this.state.variables}
+								key={this.state.chosen + this.state.variables}
+								plot_name={this.state.chosen}
+								var_names={var_names[this.state.chosen]}
+								ref={this.variable_form}
+								onSubmit={this.handleSubmit}
+							/>
+						</section>
+						{int_vars.map((v) => (
+							<Subset
+								key={v + "_range"}
+								variable={v}
+								minValue={this.state.variables[v].minValue}
+								maxValue={this.state.variables[v].maxValue}
+								onChange={this.filter}
+							/>
+						))
+						}
+						{bool_vars.map((v) => (
+							<Selector
+								key={v + "_selector"}
+								variable={v}
+								checked={this.state.variables[v].checked}
+								onChange={this.filter}
+							/>
+						))
+						}
+					</section>
 					<PlotContainer ref={this.subject_plotter} />
 				</section>
 			</article>

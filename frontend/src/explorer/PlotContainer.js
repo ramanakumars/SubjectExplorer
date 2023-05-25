@@ -47,6 +47,10 @@ export default class PlotContainer extends React.Component {
             var nbins = 50;
             var binwidth = (binend - binstart) / nbins;
 
+            if(metadata_key === "anomaly_score") {
+                layout['yaxis'] = {type: 'log'};
+            }
+
             data = {
                 'x': values, 'type': plotly_type[plot_type],
                 'xbins': { 'start': binstart, 'end': binend, 'size': binwidth },
@@ -301,6 +305,24 @@ class SubjectPlotter extends React.Component {
         }
 
         this.props.handleSelect(data);
+    }
+
+    updatePlot = (new_data, new_layout) => {
+        var data = this.state.data[0];
+
+        // update the data variables
+        Object.entries(new_data.data).map((k, d) => {
+            data[k] = d
+        });
+        
+        var layout = this.state.layout;
+
+        // update the data variables
+        Object.entries(new_layout.data).map((k, d) => {
+            layout[k] = d
+        });
+
+        this.setState({data: data, layout: layout});
     }
 
     render() {
