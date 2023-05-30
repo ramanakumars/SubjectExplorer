@@ -310,22 +310,22 @@ class SubjectPlotter extends React.Component {
 
     updatePlot = (new_data, new_layout) => {
         var data = this.state.data[0];
-        
+
         console.log(Object.entries(new_data));
 
         // update the data variables
-        Object.entries(new_data).map(([k, d]) => {
-            data[k] = Object.assign({}, data[k], d);
-        });
-        
+        Object.entries(new_data).map(([k, d]) => (
+            data[k] = Object.assign({}, data[k], d)
+        ));
+
         var layout = this.state.layout;
 
         // update the data variables
-        Object.entries(new_layout).map(([k, d]) => {
-            layout[k] = Object.assign({}, layout[k], d);
-        });
+        Object.entries(new_layout).map(([k, d]) => (
+            layout[k] = Object.assign({}, layout[k], d)
+        ));
 
-        this.setState({data: [data], layout: layout});
+        this.setState({ data: [data], layout: layout });
     }
 
     render() {

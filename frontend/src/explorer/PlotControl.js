@@ -1,5 +1,4 @@
 import React from "react";
-import MultiRangeSlider from "multi-range-slider-react";
 import MetadataUpload from "./MetadataUpload";
 import { InputMultiRange, InputNumber } from "../tools/Inputs"
 
@@ -165,8 +164,10 @@ export class Subset extends React.Component {
 	}
 
 	changeMinMax = (minValue, maxValue) => {
-		this.setState({ currentMin: minValue, currentMax: maxValue });
-		this.props.onChange(this.state);
+		this.setState(
+			{ currentMin: minValue, currentMax: maxValue },
+			this.props.onChange(this.state)
+		);
 	}
 
 	render() {
@@ -254,7 +255,7 @@ export class PlotConfigureHist extends React.Component {
 		if (this.state.variable !== undefined) {
 			return (
 				<div id='configure-hist'>
-					<h2>Configure histogram</h2>
+					<h3>Configure histogram</h3>
 					<form action="#" className="histConfigure" onSubmit={this.onSubmit}>
 						<InputMultiRange
 							minValue={this.state.variable_data.minValue}
