@@ -166,7 +166,7 @@ export class Subset extends React.Component {
 	changeMinMax = (minValue, maxValue) => {
 		this.setState(
 			{ currentMin: minValue, currentMax: maxValue },
-			this.props.onChange(this.state)
+			() => this.props.onChange(this.state)
 		);
 	}
 
