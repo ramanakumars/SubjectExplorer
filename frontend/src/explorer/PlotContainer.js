@@ -47,10 +47,6 @@ export default class PlotContainer extends React.Component {
             var nbins = 50;
             var binwidth = (binend - binstart) / nbins;
 
-            if(metadata_key === "anomaly_score") {
-                layout['yaxis'] = {type: 'log'};
-            }
-
             data = {
                 'x': values, 'type': plotly_type[plot_type],
                 'xbins': { 'start': binstart, 'end': binend, 'size': binwidth },
@@ -187,6 +183,11 @@ export default class PlotContainer extends React.Component {
         this.subject_images.current.setState({ subject_data: data, page: 0 });
     }
 
+    updatePlot = (new_data, new_layout) => {
+        console.log(new_data);
+        this.subject_plotter.current.updatePlot(new_data, new_layout);
+    }
+
     render() {
         return (
             <section id="plotter">
@@ -309,20 +310,22 @@ class SubjectPlotter extends React.Component {
 
     updatePlot = (new_data, new_layout) => {
         var data = this.state.data[0];
+        
+        console.log(Object.entries(new_data));
 
         // update the data variables
-        Object.entries(new_data.data).map((k, d) => {
-            data[k] = d
+        Object.entries(new_data).map(([k, d]) => {
+            data[k] = Object.assign({}, data[k], d);
         });
         
         var layout = this.state.layout;
 
         // update the data variables
-        Object.entries(new_layout.data).map((k, d) => {
-            layout[k] = d
+        Object.entries(new_layout).map(([k, d]) => {
+            layout[k] = Object.assign({}, layout[k], d);
         });
 
-        this.setState({data: data, layout: layout});
+        this.setState({data: [data], layout: layout});
     }
 
     render() {

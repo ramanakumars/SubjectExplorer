@@ -6,7 +6,7 @@ section#plot-info {
     align-items: flex-start;
     align-content: flex-start;
     background-color: var(--primary);
-    padding: 1.2em;
+    padding: 0.75em;
     color: var(--bright-text);
     box-sizing: border-box;
     height: 100%;
@@ -176,6 +176,7 @@ div#selector_checkbox input {
 	width: 100%;
 	border: 0px !important;
 	box-shadow: none !important;
+    padding: 0.75em 0.25em !important;
 }
 
 div.multi-range-slider div.thumb::before {
@@ -267,4 +268,32 @@ form.upload input[type=file]::file-selector-button {
 
 form.upload input[type=file]::file-selector-button:hover {
 	background-color: var(--tertiary);
+}
+
+form.histConfigure {
+    width: 100%;
+    padding: 0.25em;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+form.histConfigure span {
+    width: 100%;
+    display: flex;
+    padding: 0.25em;
+    flex-flow: column nowrap;
+    box-pack: justify;
+    justify-content: space-between;
+}
+
+div#configure-hist {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-flow: column wrap;
+    border: 2px solid var(--dark);
+    border-radius: 1em;
+    padding: 0.5em;
+    padding-right: 1em;
+    margin: 0.75em 0.15em;
 }

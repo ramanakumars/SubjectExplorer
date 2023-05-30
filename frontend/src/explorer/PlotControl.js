@@ -1,6 +1,7 @@
 import React from "react";
 import MultiRangeSlider from "multi-range-slider-react";
 import MetadataUpload from "./MetadataUpload";
+import { InputMultiRange, InputNumber } from "../tools/Inputs"
 
 export const var_names = {
 	hist: ["x"],
@@ -163,28 +164,21 @@ export class Subset extends React.Component {
 		};
 	}
 
-	handleInput(e) {
-		this.setState({ currentMax: e.maxValue, currentMin: e.minValue });
-
+	changeMinMax = (minValue, maxValue) => {
+		this.setState({ currentMin: minValue, currentMax: maxValue });
 		this.props.onChange(this.state);
 	}
 
 	render() {
 		return (
 			<div id="filter">
-				<label>Filter by {this.state.variable}</label>
-				<MultiRangeSlider
-					min={this.state.minValue}
-					max={this.state.maxValue}
+				<InputMultiRange
+					minValue={this.state.minValue}
+					maxValue={this.state.maxValue}
 					step={1}
-					ruler={false}
-					label={true}
-					preventWheel={false}
-					minValue={this.state.currentMin}
-					maxValue={this.state.currentMax}
-					onInput={(e) => {
-						this.handleInput(e);
-					}}
+					type='int'
+					text={'Filter by ' + this.state.variable}
+					onChange={this.changeMinMax}
 				/>
 			</div>
 		);
@@ -225,21 +219,86 @@ export class Selector extends React.Component {
 }
 
 
-export class PlotConfigure extends React.Component {
+
+
+export class PlotConfigureHist extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			type: props.type
+			variable: props.variable,
+			variable_data: props.variable_data,
+			binstart: props.variable_data.minValue,
+			binend: props.variable_data.maxValue,
+			nbins: props.nbins
 		}
 	}
 
+	changeMinMax = (start, end) => {
+		this.setState({ binstart: start, binend: end });
+	}
+
+	changeNBins = (value) => {
+		this.setState({ nbins: value });
+	}
+
+	changeScale = (e) => {
+		this.setState({ axis_scale: e.target.value });
+	}
+
+	onSubmit = (e) => {
+		e.preventDefault();
+		this.props.onChange(this.state);
+	}
+
 	render() {
-		return (
-			<div id='configure-plot'>
-				{this.state.type === 'hist' &&
-					<input type='numeric' name='histmin' defaultValue={this.state.variable.min}/>
-				}
-			</div>
-		)
+		if (this.state.variable !== undefined) {
+			return (
+				<div id='configure-hist'>
+					<h2>Configure histogram</h2>
+					<form action="#" className="histConfigure" onSubmit={this.onSubmit}>
+						<InputMultiRange
+							minValue={this.state.variable_data.minValue}
+							maxValue={this.state.variable_data.maxValue}
+							step={0.01}
+							type='float'
+							text='Histogram range'
+							onChange={this.changeMinMax}
+						/>
+						<InputNumber
+							name='histnbins'
+							text='Number of bins'
+							value={this.state.nbins}
+							minValue={1}
+							maxValue={500}
+							type='int'
+							onChange={this.changeNBins}
+						/>
+						<span>
+							<label htmlFor="histwidth">Axis scale:</label>
+							<select name="axis_scale" onChange={this.changeScale}>
+								{Object(['linear', 'log']).map((v) => {
+									if (this.state.axis_scale === v) {
+										return (
+											<option key={v + "_option"} value={v} selected>
+												{v}
+											</option>
+										)
+									} else {
+										return (
+											<option key={v + "_option"} value={v}>
+												{v}
+											</option>)
+									}
+								})
+								}
+							</select>
+						</span>
+						<input type="submit" value="Submit!" />
+					</form>
+				</div>
+			)
+		} else {
+			return;
+		}
 	}
 }

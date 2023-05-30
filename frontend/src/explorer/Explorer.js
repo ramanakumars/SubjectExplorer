@@ -1,12 +1,12 @@
 import React from "react";
 import MainNav from "../util/Nav.js";
-import PlotContainer from './PlotContainer.js'
-import { CreatePlotForm, ChoosePlotType, Subset, Selector, PlotConfigure, var_names } from './PlotControl'
+import PlotContainer, { blue } from './PlotContainer.js'
+import { CreatePlotForm, ChoosePlotType, Subset, Selector, PlotConfigureHist, var_names } from './PlotControl'
 import { getWorkflowData, getSubjects, getSubjectsFromProject } from "../util/zoo_utils.js";
 import LoadingPage from "../util/LoadingPage.js";
 
 
-class Explorer extends React.Component {
+export default class Explorer extends React.Component {
 	/*
 	 * Main explorer app. Creates the forms for choosing plot type and variables
 	 * and also the subsequent display for the plot and the subject images
@@ -18,7 +18,9 @@ class Explorer extends React.Component {
 			id: props.id,
 			type: props.type,
 			variables: [],
-			chosen: "hist"
+			plot_type: "hist",
+			plot_variables: [],
+			plot_ready: false,
 		};
 
 		// create references for the child components
@@ -171,7 +173,7 @@ class Explorer extends React.Component {
 		event.preventDefault();
 
 		// start building the data structure to send to the backend
-		var plot_type = this.state.chosen;
+		var plot_type = this.state.plot_type;
 
 		const chosen_vars = var_names[plot_type];
 
@@ -183,8 +185,6 @@ class Explorer extends React.Component {
 			}
 			plot_variables[chosen_vars[i]] = event.target.elements[chosen_vars[i]].value;
 		}
-
-		this.setState({plot_variables: plot_variables});
 
 		var layout = {};
 		layout["hovermode"] = "closest";
@@ -207,10 +207,12 @@ class Explorer extends React.Component {
 			vars[0],
 			vars[1]
 		);
+		
+		this.setState({plot_variables: plot_variables, plot_ready: true});
 	}
 	
 	handleChange = (data) => {
-		this.setState({ chosen: data.chosen });
+		this.setState({ plot_type: data.chosen, plot_ready: false});
 	}
 
 
@@ -226,7 +228,25 @@ class Explorer extends React.Component {
 			// from the backend API
 			this.refreshData(data);
 		});
+	}
 
+	handleHistConfigure = (data) => {
+		var binstart = data.binstart;
+		var binend = data.binend;
+		var nbins = data.nbins;
+		var binwidth = (binend - binstart) / nbins;
+
+		var new_data = {
+			'xbins': { 'start': binstart, 'end': binend, 'size': binwidth },
+			'nbinsx': nbins,
+			'ybins': { type: data.axis_scale },
+		};
+
+		var new_layout = {
+			'yaxis': {type: data.axis_scale}
+		}
+
+		this.subject_plotter.current.updatePlot(new_data, new_layout);
 	}
 
 	render() {
@@ -251,9 +271,9 @@ class Explorer extends React.Component {
 							/>
 							<CreatePlotForm
 								variables={this.state.variables}
-								key={this.state.chosen + this.state.variables}
-								plot_name={this.state.chosen}
-								var_names={var_names[this.state.chosen]}
+								key={this.state.plot_type + this.state.variables}
+								plot_name={this.state.plot_type}
+								var_names={var_names[this.state.plot_type]}
 								ref={this.variable_form}
 								onSubmit={this.handleSubmit}
 							/>
@@ -277,6 +297,16 @@ class Explorer extends React.Component {
 							/>
 						))
 						}
+						{this.state.plot_type === "hist" && this.state.plot_ready &&
+							<PlotConfigureHist
+								type={this.state.plot_type}
+								key={this.state.plot_type + "_" + this.state.plot_variables.x}
+								onChange={this.handleHistConfigure}
+								variable={this.state.plot_variables.x}
+								variable_data={this.state.variables[this.state.plot_variables.x]}
+								nbins={50}
+							/>
+						}
 					</section>
 					<PlotContainer ref={this.subject_plotter} />
 				</section>
@@ -284,5 +314,3 @@ class Explorer extends React.Component {
 		);
 	}
 }
-
-export default Explorer;
