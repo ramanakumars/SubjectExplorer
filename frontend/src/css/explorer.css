@@ -6,7 +6,7 @@ section#plot-info {
     align-items: flex-start;
     align-content: flex-start;
     background-color: var(--primary);
-    padding: 0.75em;
+    padding: 1em;
     color: var(--bright-text);
     box-sizing: border-box;
     height: 100%;
