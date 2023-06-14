@@ -13,7 +13,7 @@ export default class Subject extends React.Component {
         return (
             <span key={this.state.subject_ID + "_span"} style={this.state.style}>
                 <a href={"/subject/" + this.state.subject_ID} target="_blank" rel="noreferrer">
-                    {this.state.url.length == 1 &&
+                    {this.state.url.length === 1 &&
                     <SingleSubjectImage
                         subject_ID={this.state.subject_ID}
                         url={this.state.url}
