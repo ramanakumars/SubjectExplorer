@@ -1,10 +1,16 @@
 import React from "react";
 import MainNav from "../util/Nav.js";
-import PlotContainer, { blue } from './PlotContainer.js'
+// import PlotContainer, { blue } from './PlotContainer.js'
+import SubjectPlotter from './SubjectPlotter'
+import SubjectImages from './SubjectImages'
 import { CreatePlotForm, ChoosePlotType, Subset, Selector, PlotConfigureHist, var_names } from './PlotControl'
+import VariableFilter from './VariableFilter'
 import { getWorkflowData, getSubjects, getSubjectsFromProject } from "../util/zoo_utils.js";
 import LoadingPage from "../util/LoadingPage.js";
 
+export const blue = "#2e86c1";
+export const red = "#922b21";
+const plotly_type = { 'hist': 'histogram', 'scatter': 'scattergl' };
 
 export default class Explorer extends React.Component {
 	/*
@@ -25,6 +31,8 @@ export default class Explorer extends React.Component {
 
 		// create references for the child components
 		this.subject_plotter = React.createRef();
+		this.subject_images = React.createRef();
+		this.hover_images = React.createRef();
 		this.loadingDiv = React.createRef();
 		
 		// plot controllers
@@ -32,56 +40,8 @@ export default class Explorer extends React.Component {
 		this.variable_form = React.createRef();
 		this.metadata_upload = React.createRef();
 		this.plot_configurator = React.createRef();
-
-		// filter will handle the slider for perijove filtering and
-		// "vortex only" selection
-		this.filter = this.filter.bind(this);
 	}
 	
-	get_int_bool_vars = () => {
-		/*
-		 * get the integer (slider filter) and boolean (checkbox filter)
-		 * variables and their corresponding filter data. This will be passed
-		 * to the PlotContainer class to filter the plotly data
-		 */
-		var int_vars = {};
-		var bool_vars = {};
-		for (let key in this.state.variables) {
-			var variable = this.state.variables[key];
-			if (variable.dtype.includes('int')) {
-				int_vars[key] = variable;
-			}
-			if (variable.dtype.includes('bool')) {
-				bool_vars[key] = variable;
-			}
-		}
-
-		return [int_vars, bool_vars];
-	}
-
-	filter = (update) => {
-		/*
-		 * driver function to get the updated data and modify the state
-		 * this will then call the super filter method to update the plot
-		 */
-		let state = { ...this.state };
-		let update_variable = update.variable;
-
-		if (state.variables[update_variable].dtype.includes('int')) {
-			state.variables[update_variable].currentMin = update.currentMin;
-			state.variables[update_variable].currentMax = update.currentMax;
-		} else if (state.variables[update_variable].dtype.includes('bool')) {
-			state.variables[update_variable].checked = update.checked;
-		}
-
-		this.setState(state, function() {
-			let vars = this.get_int_bool_vars();
-			// this is handled mainly by the plotter component since that is where
-			// the data is stored
-			this.subject_plotter.current.filter(vars[0], vars[1]);
-		});
-	}
-
 	componentDidMount = () => {
 		this.loadingDiv.current.enable();
 		this.loadingDiv.current.setState({ text: 'Getting subjects...' });
@@ -127,14 +87,151 @@ export default class Explorer extends React.Component {
 			});
 		}
 	}
+	
+	get_int_bool_vars = () => {
+		/*
+		 * get the integer (slider filter) and boolean (checkbox filter)
+		 * variables and their corresponding filter data. This will be passed
+		 * to the PlotContainer class to filter the plotly data
+		 */
+		var vars = [];
+		for (let key in this.state.variables) {
+			let variable_data = this.state.variables[key];
+			var variable = {name: key};
+			if (variable_data.dtype.includes('int')) {
+				variable.dtype = 'int';
+			}
+			if (variable_data.dtype.includes('float')) {
+				variable.dtype = 'float';
+			}
+			if (variable_data.dtype.includes('bool')) {
+				variable.dtype = 'bool';
+			}
+			vars.push(variable);
+		}
+
+		return vars;
+	}
+
+	filter = (update) => {
+		/*
+		 * driver function to get the updated data and modify the state
+		 * this will then call the super filter method to update the plot
+		 */
+		let state = { ...this.state };
+		let update_variable = update.variable;
+
+		if (state.variables[update_variable].dtype.includes('int')) {
+			state.variables[update_variable].currentMin = update.currentMin;
+			state.variables[update_variable].currentMax = update.currentMax;
+		} else if (state.variables[update_variable].dtype.includes('float')) {
+			state.variables[update_variable].currentMin = update.currentMin;
+			state.variables[update_variable].currentMax = update.currentMax;
+		} else if (state.variables[update_variable].dtype.includes('bool')) {
+			state.variables[update_variable].checked = update.checked;
+		}
+
+		this.setState(state, this.filter_plot);
+	}
+
+	filter_plot = () => {
+        /*
+         * filters the range of perijoves displayed
+         * called after plotting and also when the PJ slider is changed
+         */
+
+		if (!this.state.plot_ready) {
+			return;
+		}
+
+		const vars = this.get_int_bool_vars();
+        var data = {};
+        var subject_data = [];
+
+        if (!this.state.data) {
+            return null;
+        }
+
+        // duplicate the plotly structure
+        for (var key in this.state.data) {
+            if (key !== "x" || key !== "y") {
+                data[key] = this.state.data[key];
+            }
+        }
+
+        data.marker.color = new Array(data.marker.color.length).fill(blue);
+
+        // create the same set of variables as the original plot
+        data.x = [];
+        if ("y" in this.state.data) {
+            data.y = [];
+        }
+
+        // copy over the data for the given perijove range
+        for (var i = 0; i < this.state.subjects.length; i++) {
+            let metadata = this.state.subjects[i];
+            let skip_row = false;
+            for (var vari of vars) {
+				let variable = this.state.variables[vari.name];
+                if ((vari.dtype === 'int') || (vari.dtype === 'float')) {
+                    if (
+                        (metadata[vari.name] < variable.currentMin) || (metadata[vari.name] > variable.currentMax)
+                    ) {
+                        skip_row = true;
+                        break;
+                    }
+                }
+                
+                if (vari.dtype == 'bool') {
+                    if ((variable.checked) & (!metadata[vari.name])) {
+                        skip_row = true;
+                        break;
+                    }
+                }
+            }
+
+            if (skip_row) {
+                continue;
+            }
+
+            data.x.push(this.state.data.x[i]);
+			let subject = this.state.subjects[i];
+			subject_data.push({ subject_ID: subject.subject_ID, url: subject.url });
+
+            if ("y" in this.state.data) {
+                data.y.push(this.state.data.y[i]);
+            }
+        }
+
+        // refresh the plot
+        this.set_plot_data(data, subject_data);	
+	}
+    
+	set_plot_data(data, subject_data) {
+        /*
+         * sets the relevant data to the plotly component and subject image
+         * display for plotting purposes
+         * by default is called when the backend receives data from clicking
+         * "Plot!"
+         */
+
+        // set the data for the main set of subject images at the bottom
+        this.subject_images.current.setState({ subject_data: subject_data });
+
+        // set the data for the images on hover on the right
+        // by default only sets the first element of the subject list
+        this.hover_images.current.setState({ subject_data: [subject_data[0]] });
+
+        // set the data for the plotly component
+        this.subject_plotter.current.setState({
+            data: [data],
+            layout: this.state.layout,
+            subject_data: subject_data,
+            plot_name: this.state.plot_name,
+        });
+    }
 
 	refreshData = (data) => {
-		this.subject_plotter.current.setState({
-			'subject_data': data.subject_data,
-			'variables': data.variables,
-			'dtypes': data.dtypes
-		});
-
 		var variable_data = {};
 
 		variable_data = Object.fromEntries(data.variables.map((variable) => {
@@ -197,18 +294,51 @@ export default class Explorer extends React.Component {
 			layout["xaxis"] = { "title": plot_variables['x'] }
 			layout["yaxis"] = { "title": plot_variables['y'] }
 		}
+        
+		var data = {};
+        if (plot_type === "hist") {
+            var metadata_key = plot_variables['x']
 
-		// send to the backend
-		let vars = this.get_int_bool_vars();
-		this.subject_plotter.current.set_data(
-			plot_variables,
-			layout,
-			plot_type,
-			vars[0],
-			vars[1]
-		);
-		
-		this.setState({plot_variables: plot_variables, plot_ready: true});
+            var values = this.state.subjects.map((data) => (
+                data[metadata_key]
+            ));
+
+            var binstart = Math.floor(Math.min(...values));
+            var binend = Math.ceil(Math.max(...values));
+            var nbins = 50;
+            var binwidth = (binend - binstart) / nbins;
+
+            data = {
+                'x': values, 'type': plotly_type[plot_type],
+                'xbins': { 'start': binstart, 'end': binend, 'size': binwidth },
+                'nbinsx': nbins,
+                'marker': { 'color': Array(nbins).fill(blue) }
+            };
+        } else if (plot_type === "scatter") {
+            var data_x = this.state.subjects.map((data) => (
+                data[plot_variables['x']]));
+            var data_y = this.state.subjects.map((data) => (
+                data[plot_variables['y']]));
+
+            data = {
+                'x': data_x, 'y': data_y, 'mode': 'markers',
+                'type': plotly_type[plot_type],
+                'marker': { 'color': Array(data_x.length).fill("dodgerblue") }
+            };
+        }
+
+        this.setState(
+            {
+				data: data,
+                layout: layout,
+                plot_name: plot_type,
+				plot_variables: plot_variables,
+				plot_ready: true
+            },
+            function() {
+                this.filter_plot();
+            }
+        );
 	}
 	
 	handleChange = (data) => {
@@ -229,6 +359,22 @@ export default class Explorer extends React.Component {
 			this.refreshData(data);
 		});
 	}
+    
+	handleHover = (data) => {
+        /*
+         * function that handles the change of the hover image panel when
+         * hovering over the plotly component
+         */
+        this.hover_images.current.setState({ subject_data: data, page: 0 });
+    }
+
+	handleSelect = (data) => {
+        /*
+         * function that handles the change of the selection image panel when
+         * lasso or box selecting data in the plotly component
+         */
+        this.subject_images.current.setState({ subject_data: data, page: 0 });
+    }
 
 	handleHistConfigure = (data) => {
 		var binstart = data.binstart;
@@ -252,10 +398,7 @@ export default class Explorer extends React.Component {
 	render() {
 		document.title = "JuDE explorer";
 		
-
-		var [int_vars, bool_vars] = this.get_int_bool_vars();
-		int_vars = Object.keys(int_vars);
-		bool_vars = Object.keys(bool_vars);
+		const vars = this.get_int_bool_vars();
 
 		return (
 			<article id="main">
@@ -278,21 +421,13 @@ export default class Explorer extends React.Component {
 								onSubmit={this.handleSubmit}
 							/>
 						</section>
-						{int_vars.map((v) => (
-							<Subset
-								key={v + "_range"}
-								variable={v}
-								minValue={this.state.variables[v].minValue}
-								maxValue={this.state.variables[v].maxValue}
-								onChange={this.filter}
-							/>
-						))
-						}
-						{bool_vars.map((v) => (
-							<Selector
-								key={v + "_selector"}
-								variable={v}
-								checked={this.state.variables[v].checked}
+						{vars.map((v) => (
+							<VariableFilter
+								key={v.name + "_filter"}
+								variable={v.name}
+								dtype={this.state.variables[v.name].dtype}
+								minValue={this.state.variables[v.name].minValue}
+								maxValue={this.state.variables[v.name].maxValue}
 								onChange={this.filter}
 							/>
 						))
@@ -308,7 +443,33 @@ export default class Explorer extends React.Component {
 							/>
 						}
 					</section>
-					<PlotContainer ref={this.subject_plotter} />
+					<section id="plotter">
+						<section id="plot-container">
+							<SubjectPlotter
+								ref={this.subject_plotter}
+								variables={[]}
+								data={null}
+								layout={null}
+								subject_data={[]}
+								handleHover={this.handleHover}
+								handleSelect={this.handleSelect}
+							/>
+						</section>
+						<section id="images-container">
+							<SubjectImages
+								variables={[]}
+								render_type={"selection"}
+								subject_data={[]}
+								ref={this.subject_images}
+							/>
+							<SubjectImages
+								variables={[]}
+								render_type={"hover"}
+								subject_data={[]}
+								ref={this.hover_images}
+							/>
+						</section>
+					</section>
 				</section>
 			</article>
 		);

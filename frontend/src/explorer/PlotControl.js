@@ -159,25 +159,31 @@ export class Subset extends React.Component {
 			maxValue: props.maxValue,
 			currentMin: props.minValue,
 			currentMax: props.maxValue,
-			variable: props.variable
+			variable: props.variable,
+			dtype: props.dtype
 		};
 	}
 
 	changeMinMax = (minValue, maxValue) => {
 		this.setState(
-			{ currentMin: minValue, currentMax: maxValue },
-			() => this.props.onChange(this.state)
+			{ 
+				currentMin: minValue,
+				currentMax: maxValue 
+			},
+			() => {
+				return this.props.onChange(this.state);
+			}
 		);
 	}
 
 	render() {
 		return (
-			<div id="filter">
+			<div className="filter">
 				<InputMultiRange
 					minValue={this.state.minValue}
 					maxValue={this.state.maxValue}
 					step={1}
-					type='int'
+					type={this.state.dtype.includes('float') ? ('float') : ('int')}
 					text={'Filter by ' + this.state.variable}
 					onChange={this.changeMinMax}
 				/>
