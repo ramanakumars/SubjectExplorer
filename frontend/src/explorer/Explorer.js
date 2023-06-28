@@ -12,6 +12,11 @@ export const blue = "#2e86c1";
 export const red = "#922b21";
 const plotly_type = { 'hist': 'histogram', 'scatter': 'scattergl' };
 
+
+const get_variable_index = (variable, name) => (
+	variable.map((v) => ( v.name )).indexOf(name)
+)
+
 export default class Explorer extends React.Component {
 	/*
 	 * Main explorer app. Creates the forms for choosing plot type and variables
@@ -27,6 +32,8 @@ export default class Explorer extends React.Component {
 			plot_type: "hist",
 			plot_variables: [],
 			plot_ready: false,
+			subjects: [],
+			subject_count: 0
 		};
 
 		// create references for the child components
@@ -119,7 +126,7 @@ export default class Explorer extends React.Component {
 		 * this will then call the super filter method to update the plot
 		 */
 		let state = { ...this.state };
-		let update_variable = update.variable;
+		let update_variable = get_variable_index(state.variables, update.variable);
 
 		if (state.variables[update_variable].dtype.includes('int')) {
 			state.variables[update_variable].currentMin = update.currentMin;
@@ -144,7 +151,6 @@ export default class Explorer extends React.Component {
 			return;
 		}
 
-		const vars = this.get_int_bool_vars();
         var data = {};
         var subject_data = [];
 
@@ -167,23 +173,22 @@ export default class Explorer extends React.Component {
             data.y = [];
         }
 
-        // copy over the data for the given perijove range
+        // copy over the data for the given data range
         for (var i = 0; i < this.state.subjects.length; i++) {
             let metadata = this.state.subjects[i];
             let skip_row = false;
-            for (var vari of vars) {
-				let variable = this.state.variables[vari.name];
-                if ((vari.dtype === 'int') || (vari.dtype === 'float')) {
+            for (var variable of this.state.variables) {
+                if ((variable.dtype.includes('int')) || (variable.dtype.includes('float'))) {
                     if (
-                        (metadata[vari.name] < variable.currentMin) || (metadata[vari.name] > variable.currentMax)
+                        (metadata[variable.name] < variable.currentMin) || (metadata[variable.name] > variable.currentMax)
                     ) {
                         skip_row = true;
                         break;
                     }
                 }
                 
-                if (vari.dtype == 'bool') {
-                    if ((variable.checked) & (!metadata[vari.name])) {
+                if (variable.dtype.includes('bool')) {
+                    if ((variable.checked) & (!metadata[variable.name])) {
                         skip_row = true;
                         break;
                     }
@@ -207,7 +212,7 @@ export default class Explorer extends React.Component {
         this.set_plot_data(data, subject_data);	
 	}
     
-	set_plot_data(data, subject_data) {
+	set_plot_data = (data, subject_data) => {
         /*
          * sets the relevant data to the plotly component and subject image
          * display for plotting purposes
@@ -234,21 +239,22 @@ export default class Explorer extends React.Component {
 	refreshData = (data) => {
 		var variable_data = {};
 
-		variable_data = Object.fromEntries(data.variables.map((variable) => {
+		variable_data = data.variables.map((variable) => {
 			console.log('Getting info for ' + variable);
 			let var_data = {};
-			var_data['dtype'] = data.dtypes[variable];
+			var_data.name = variable;
+			var_data.dtype = data.dtypes[variable];
 
 			let variable_sub = data.subject_data.map((dati) => (dati[variable]));
 
-			var_data['minValue'] = Math.min(...variable_sub);
-			var_data['maxValue'] = Math.max(...variable_sub);
+			var_data.minValue = var_data.currentMin = Math.min(...variable_sub);
+			var_data.maxValue = var_data.currentMax = Math.max(...variable_sub);
 
-			if (var_data['dtype'].includes('bool')) {
-				var_data['checked'] = true;
+			if (var_data.dtype.includes('bool')) {
+				var_data.checked = true;
 			}
-			return [variable, var_data];
-		}));
+			return var_data;
+		});
 
 		// set the update variable data
 		this.setState({variables: variable_data});
@@ -341,25 +347,10 @@ export default class Explorer extends React.Component {
         );
 	}
 	
-	handleChange = (data) => {
+	handleVariableSelect = (data) => {
 		this.setState({ plot_type: data.chosen, plot_ready: false});
 	}
 
-
-	handleFileUpload = (e) => {
-		var data = new FormData();
-		data.append('umap', e.target[0].files[0]);
-
-		fetch("/backend/upload-umap/", {
-			method: "POST",
-			body: data
-		}).then((result) => result.json()).then((data) => {
-			// get the subject metadata and the list of variables
-			// from the backend API
-			this.refreshData(data);
-		});
-	}
-    
 	handleHover = (data) => {
         /*
          * function that handles the change of the hover image panel when
@@ -398,8 +389,6 @@ export default class Explorer extends React.Component {
 	render() {
 		document.title = "JuDE explorer";
 		
-		const vars = this.get_int_bool_vars();
-
 		return (
 			<article id="main">
 				<MainNav target="explore" />
@@ -410,7 +399,7 @@ export default class Explorer extends React.Component {
 							<ChoosePlotType
 								ref={this.choose_plot_form}
 								variables={this.state.variables}
-								handleChange={this.handleChange}
+								handleChange={this.handleVariableSelect}
 							/>
 							<CreatePlotForm
 								variables={this.state.variables}
@@ -421,13 +410,13 @@ export default class Explorer extends React.Component {
 								onSubmit={this.handleSubmit}
 							/>
 						</section>
-						{vars.map((v) => (
+						{this.state.variables.map((v) => (
 							<VariableFilter
 								key={v.name + "_filter"}
 								variable={v.name}
-								dtype={this.state.variables[v.name].dtype}
-								minValue={this.state.variables[v.name].minValue}
-								maxValue={this.state.variables[v.name].maxValue}
+								dtype={v.dtype}
+								minValue={v.minValue}
+								maxValue={v.maxValue}
 								onChange={this.filter}
 							/>
 						))
@@ -435,10 +424,9 @@ export default class Explorer extends React.Component {
 						{this.state.plot_type === "hist" && this.state.plot_ready &&
 							<PlotConfigureHist
 								type={this.state.plot_type}
-								key={this.state.plot_type + "_" + this.state.plot_variables.x}
 								onChange={this.handleHistConfigure}
 								variable={this.state.plot_variables.x}
-								variable_data={this.state.variables[this.state.plot_variables.x]}
+								variable_data={this.state.variables[get_variable_index(this.state.variables, this.state.plot_variables.x)]}
 								nbins={50}
 							/>
 						}

@@ -93,10 +93,11 @@ export class CreatePlotForm extends React.Component {
 			var_selects.push({ name: this.state.var_names[i] });
 		}
 
+
 		for (let key in this.state.variables) {
-			var variable = this.state.variables[key];
+			let variable = this.state.variables[key];
 			if ((variable.dtype.includes('float')) || (variable.dtype.includes('int'))) {
-				variables.push({ name: key, variable: key });
+				variables.push({ name: variable.name, variable: variable.name });
 			}
 		}
 
@@ -264,8 +265,8 @@ export class PlotConfigureHist extends React.Component {
 					<h3>Configure histogram</h3>
 					<form action="#" className="histConfigure" onSubmit={this.onSubmit}>
 						<InputMultiRange
-							minValue={this.state.variable_data.minValue}
-							maxValue={this.state.variable_data.maxValue}
+							minValue={this.state.variable_data.currentMin}
+							maxValue={this.state.variable_data.currentMax}
 							step={0.01}
 							type='float'
 							text='Histogram range'
