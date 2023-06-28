@@ -85,6 +85,11 @@ export function InputMultiRange({ minValue, maxValue, step, type, text, onChange
 	};
 
 	useEffect(() => {
+		setMaxValue(validateMax(_maxValue));
+		setMinValue(validateMin(_minValue));
+	}, [minValue, maxValue]);
+
+	useEffect(() => {
 		onChange(_minValue, _maxValue);
 	}, [_minValue, _maxValue]);
 
