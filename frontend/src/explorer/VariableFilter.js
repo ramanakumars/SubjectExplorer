@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Subset, Selector } from './PlotControl'
+import { Subset, Selector } from './Filter'
 
 
 export default function VariableFilter({variable, dtype, minValue, maxValue, checked, onChange}) {
