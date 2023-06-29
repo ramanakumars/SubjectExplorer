@@ -26,7 +26,7 @@ export const getJSONData = async (url) => {
 }
 
 export const getProjects = async () => {
-	const project_ids = [17032, 16696, 14993]
+	const project_ids = [17032, 16696, 14993, 16747]
 
 	return await Promise.all(project_ids.map(async (project_id) => {
 		return getJSONData("https://www.zooniverse.org/api/projects/" + project_id)

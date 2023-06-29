@@ -15,7 +15,8 @@ project_subject_sets = {
               112471, 112499, 112852, 112856, 112864,
               112873, 112874, 112937, 112938, 112968,
               112969, 112996, 112997],
-    '17032': [105808]
+    '17032': [105808],
+    '16747': [114147]
 }
 BATCH_SIZE = 200
 
@@ -120,7 +121,7 @@ def get_subjects_from_subject_sets(subject_sets, n_subjects):
                 for subject in data['subjects']:
                     sub = {'subject_ID': subject['id']}
                     for key in subject['metadata'].keys():
-                        metai = change_type(subject['metadata'][key])
+                        metai = change_type(str(subject['metadata'][key]))
                         sub[key] = metai
                     sub['url'] = img_url(subject['locations'])
                     subjects.append(sub)
