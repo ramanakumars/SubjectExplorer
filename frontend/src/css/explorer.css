@@ -10,7 +10,7 @@ section#plot-info {
     padding: 1em;
     color: var(--bright-text);
     box-sizing: border-box;
-    overflow-y: scroll;
+    min-height: 100vh;
 }
 
 section#choose-plot-container {
@@ -36,13 +36,12 @@ form#hist-variables span {
 }
 
 section#plotter {
-    overflow-y: auto;
     margin: 0.25em;
     padding: 0.25em;
     box-sizing: border-box;
 }
 
-nav#plot-type {
+div#plot-type {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
@@ -50,7 +49,7 @@ nav#plot-type {
     align-items: center;
 }
 
-nav#plot-type span {
+div#plot-type span {
     margin: 0px 2em;
 }
 
@@ -66,7 +65,7 @@ label.plot-type:hover {
 #plot-container {
     width: 100%;
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     box-sizing: border-box;
@@ -79,7 +78,7 @@ div#plot {
 	margin: auto;
 }
 
-nav#plot-type {
+div#plot-type {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
@@ -87,7 +86,7 @@ nav#plot-type {
     align-items: center;
 }
 
-nav#plot-type span {
+div#plot-type span {
     width: 45%; 
 	height: 4em;
     margin: 0.25em;
