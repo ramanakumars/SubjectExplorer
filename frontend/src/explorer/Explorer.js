@@ -1,20 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import MainNav from "../util/Nav.js";
-import SubjectPlotter from './SubjectPlotter'
+import SubjectPlotter, { blue } from './SubjectPlotter'
 import SubjectImages from './SubjectImages'
-import { CreatePlotForm, ChoosePlotType, PlotConfigureHist, var_names } from './PlotControl'
+import { ChoosePlotType, PlotConfigureHist } from './PlotControl'
 import VariableFilter from './VariableFilter'
-import { getWorkflowData, getSubjects, getSubjectsFromProject } from "../util/zoo_utils.js";
+import { getSubjectsFromProject } from "../util/zoo_utils.js";
 import LoadingPage from "../util/LoadingPage.js";
 
-export const blue = "#2e86c1";
-export const red = "#922b21";
 const plotly_type = { 'hist': 'histogram', 'scatter': 'scattergl' };
-
-
-const get_variable_index = (variable, name) => (
-	variable.map((v) => ( v.name )).indexOf(name)
-)
 
 const filterNumericVars = (variables) => {
 	var vars = [];
@@ -139,7 +132,7 @@ export default function Explorer({id, type}) {
         var data = {};
         var subject_data = [];
 
-        if (_data.length==0) {
+        if (_data.length===0) {
             return undefined;
         }
 
@@ -194,7 +187,7 @@ export default function Explorer({id, type}) {
             plot_name: this.state.plot_name,
         });
 		*/
-	}, [_data, _layout, _plot_type, _plot_variables]);
+	}, [_data, _layout, _plot_type, _plot_variables, _subject_count, _subjects]);
 	
 	const handleHover = (data) => {
         /*
@@ -227,6 +220,7 @@ export default function Explorer({id, type}) {
 						{_is_plot_ready && 
 							<>
 								<SubjectPlotter 
+									key={_plot_type + "_" + _plot_variables.x + "_" + _plot_variables.y}
 									data={[_data]}
 									layout={_layout}
 									variables={_variables}

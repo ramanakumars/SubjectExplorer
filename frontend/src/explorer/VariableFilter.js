@@ -8,8 +8,8 @@ export default function VariableFilter({variable, dtype, minValue, maxValue, che
 	const [_variable, setVariable] = useState(variable);
 	const [_dtype, setDtype] = useState(dtype);
 	const [_checked, setChecked] = useState(checked);
-
-	const [_slider, toggleSlider] = useState(true);
+	
+	const _slider = false;
 
 	useEffect(() => {
 		setVariable(variable);

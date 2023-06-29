@@ -9,7 +9,7 @@ export const var_names = {
 export function ChoosePlotType({ variables, handleSubmit }) {
 	const [_chosen, setPlotType] = useState("hist");
 	const [_variables, setVariables] = useState(variables);
-	const [_plot_variables, setPlotVariables] = useState({x: null, y: null});
+	const [_plot_variables, setPlotVariables] = useState({ x: null, y: null });
 
 	useEffect(() => (
 		setVariables(variables)
@@ -22,11 +22,11 @@ export function ChoosePlotType({ variables, handleSubmit }) {
 	}
 
 	const handleClick = () => {
-		if(_plot_variables.x===null) {
+		if (_plot_variables.x === null) {
 			return null;
 		}
-		if (_chosen==='scatter') {
-			if(_plot_variables.y===null) {
+		if (_chosen === 'scatter') {
+			if (_plot_variables.y === null) {
 				return null;
 			}
 		}
@@ -37,8 +37,8 @@ export function ChoosePlotType({ variables, handleSubmit }) {
 		<>
 			<h1>Choose the plot type</h1>
 			<div id="plot-type">
-				<Radio 
-					id='hist' 
+				<Radio
+					id='hist'
 					name='Histogram'
 					handleClick={handleChoosePlotType}
 					checked={true}
@@ -52,7 +52,7 @@ export function ChoosePlotType({ variables, handleSubmit }) {
 			</div>
 			<VariablePicker
 				plot_type={_chosen}
-				variables={variables}
+				variables={_variables}
 				handleChange={setPlotVariables}
 			/>
 			<input
@@ -66,7 +66,7 @@ export function ChoosePlotType({ variables, handleSubmit }) {
 
 function VariablePicker({ plot_type, variables, handleChange }) {
 	const [_variables, setVariables] = useState(variables);
-	const [_plot_variables, setPlotVariables] = useState({x: null, y: null});
+	const [_plot_variables, setPlotVariables] = useState({ x: null, y: null });
 
 	useEffect(() => (
 		setVariables(variables)
@@ -74,20 +74,20 @@ function VariablePicker({ plot_type, variables, handleChange }) {
 
 	useEffect(() => (
 		handleChange(_plot_variables)
-	), [_plot_variables]);
+	), [_plot_variables, handleChange]);
 
 	const choosePlotX = (value) => {
-		let plot_vars = {... _plot_variables}
+		let plot_vars = { ..._plot_variables }
 		plot_vars.x = value;
 		setPlotVariables(plot_vars);
 	}
-	
+
 	const choosePlotY = (value) => {
-		let plot_vars = {... _plot_variables}
+		let plot_vars = { ..._plot_variables }
 		plot_vars.y = value;
 		setPlotVariables(plot_vars);
 	}
-	
+
 	return (
 		<div className='variable-picker'>
 			<Select
@@ -96,7 +96,7 @@ function VariablePicker({ plot_type, variables, handleChange }) {
 				variables={_variables}
 				onChange={choosePlotX}
 			/>
-			{plot_type==='scatter' &&
+			{plot_type === 'scatter' &&
 				<Select
 					id='y'
 					var_name='y'
