@@ -62,6 +62,60 @@ export class InputNumber extends React.Component {
 	}
 }
 
+export function Radio({ id, name, handleClick, checked }) {
+	return (
+		<span>
+			<input
+				type="radio"
+				name="plot-type"
+				className="plot-type"
+				id={id}
+				onChange={handleClick}
+				defaultChecked={checked}
+			/>
+			<label htmlFor={id} className="radio plot-type">
+				{name}
+			</label>
+		</span>
+	)
+}
+
+export function Select({ id, var_name, variables, onChange }) {
+	const [_value, setValue] = useState("");
+
+	useEffect(() => (
+		onChange(_value)
+	), [_value]);
+
+	return (
+		<span>
+			<label htmlFor={id} key={id + "_label"}>
+				{var_name + ": "}
+			</label>
+			<select
+				name={var_name}
+				id={id}
+				defaultValue={_value}
+				className="variable-select"
+				key={var_name + "_select"}
+				onChange={(event) => setValue(event.target.value)}
+			>
+				<option value="" disabled key={var_name + "_default"}>
+					Choose a variable
+				</option>
+				{variables.map((vi) => (
+					<option
+						value={vi.name}
+						key={var_name + "_" + vi.name + "_label"}
+					>
+						{vi.name}
+					</option>
+				))}
+			</select>
+		</span>
+	);
+}
+
 
 export function InputMultiRange({ minValue, maxValue, step, type, text, onChange }) {
 	const [_minValue, setMinValue] = useState(parseValue(minValue, type));
@@ -70,14 +124,14 @@ export function InputMultiRange({ minValue, maxValue, step, type, text, onChange
 	const absMax = parseValue(maxValue, type);
 
 	const validateMin = (value) => {
-		if(!isNaN(value)) {
+		if (!isNaN(value)) {
 			return Math.max(value, absMin);
 		} else {
 			return NaN;
 		}
 	};
 	const validateMax = (value) => {
-		if(!isNaN(value)) {
+		if (!isNaN(value)) {
 			return Math.min(value, absMax);
 		} else {
 			return NaN;
