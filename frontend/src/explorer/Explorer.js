@@ -3,7 +3,7 @@ import MainNav from "../util/Nav.js";
 import SubjectPlotter, { blue } from './SubjectPlotter'
 import SubjectImages from './SubjectImages'
 import { ChoosePlotType, PlotConfigureHist } from './PlotControl'
-import VariableFilter from './VariableFilter'
+import { FilterGroup } from './VariableFilter'
 import { getSubjectsFromProject } from "../util/zoo_utils.js";
 import LoadingPage from "../util/LoadingPage.js";
 
@@ -28,11 +28,15 @@ export default function Explorer({id, type}) {
 	const [_subjects, setSubjects] = useState([]);
 	const [_subject_count, setSubjectCount] = useState(0);
 	const [_data, setData] = useState([]);
+	const [_filtered_data, setFilteredData] = useState([]);
+	const [_filtered_subjects, setFilteredSubjects] = useState([]);
 	const [_layout, setLayout] = useState({});
+	const [_filters, setFilters] = useState([]);
 
 	const loadingDiv = useRef(null);
 	const subject_images = useRef(null);
 	const hover_images = useRef(null);
+	const filter_group = useRef(null);
 
 	useEffect(() => {
 		loadingDiv.current.enable();
@@ -125,10 +129,9 @@ export default function Explorer({id, type}) {
         setLayout(layout);
         setPlotType(plot_type);
 		setPlotVariables(plot_variables);
-		setPlotReady(true);
 	}
 
-	useEffect(() => {
+	const refreshPlot = () => {
         var data = {};
         var subject_data = [];
 
@@ -154,7 +157,7 @@ export default function Explorer({id, type}) {
         // copy over the data for the given data range
         for (var i = 0; i < _subject_count; i++) {
             let metadata = _subjects[i];
-            let skip_row = false;
+            let skip_row = !filter_group.current.checkMetadata(metadata);
 
             if (skip_row) {
                 continue;
@@ -168,26 +171,44 @@ export default function Explorer({id, type}) {
                 data.y.push(_data.y[i]);
             }
         }
+		
+		setFilteredData(data);
+		setFilteredSubjects(subject_data);
 
-		console.log(data);
 
 		/*
         // set the data for the main set of subject images at the bottom
-        this.subject_images.current.setState({ subject_data: subject_data });
+        subject_images.current.setState({ subject_data: subject_data });
 
         // set the data for the images on hover on the right
         // by default only sets the first element of the subject list
-        this.hover_images.current.setState({ subject_data: [subject_data[0]] });
+        hover_images.current.setState({ subject_data: [subject_data[0]] });
 
         // set the data for the plotly component
-        this.subject_plotter.current.setState({
+        subject_plotter.current.setState({
             data: [data],
-            layout: this.state.layout,
+            layout: _layout,
             subject_data: subject_data,
-            plot_name: this.state.plot_name,
+            plot_name: _plot_type,
         });
 		*/
+	}
+
+	useEffect(() => {
+		refreshPlot();
 	}, [_data, _layout, _plot_type, _plot_variables, _subject_count, _subjects]);
+
+	useEffect(() => {
+		if(_filtered_data.x) {
+			if(_filtered_data.x.length > 0) {
+				setPlotReady(true);
+			}
+		}
+	}, [_filtered_data, _filtered_subjects])
+
+	const addFilter = () => {
+
+	}
 	
 	const handleHover = (data) => {
         /*
@@ -215,13 +236,18 @@ export default function Explorer({id, type}) {
 							variables={filterNumericVars(_variables)}
 							handleSubmit={createPlot}
 						/>
+						<FilterGroup
+							ref={filter_group}
+							variables={filterNumericVars(_variables)}
+							onChange={refreshPlot}
+						/>
 					</section>
 					<section id='plot-container'>
 						{_is_plot_ready && 
 							<>
 								<SubjectPlotter 
-									key={_plot_type + "_" + _plot_variables.x + "_" + _plot_variables.y}
-									data={[_data]}
+									key={_plot_type + "_" + _plot_variables.x + "_" + _plot_variables.y + "_" + _filtered_data.x.length}
+									data={[_filtered_data]}
 									layout={_layout}
 									variables={_variables}
 									plot_name={_plot_type}
@@ -233,13 +259,13 @@ export default function Explorer({id, type}) {
 									<SubjectImages
 										variables={_variables}
 										render_type={"selection"}
-										subject_data={_subjects}
+										subject_data={_filtered_subjects}
 										ref={subject_images}
 									/>
 									<SubjectImages
 										variables={_variables}
 										render_type={"hover"}
-										subject_data={_subjects}
+										subject_data={_filtered_subjects}
 										ref={hover_images}
 									/>
 								</section>

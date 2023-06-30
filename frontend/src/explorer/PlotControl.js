@@ -74,7 +74,7 @@ function VariablePicker({ plot_type, variables, handleChange }) {
 
 	useEffect(() => (
 		handleChange(_plot_variables)
-	), [_plot_variables, handleChange]);
+	), [_plot_variables]);
 
 	const choosePlotX = (value) => {
 		let plot_vars = { ..._plot_variables }
