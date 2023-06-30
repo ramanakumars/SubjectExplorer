@@ -147,17 +147,23 @@ div.image-page button:hover {
 	background: var(--tertiary);
 }
 
-
 div.filter {
 	width: 100%;
 	display: flex;
-	flex-wrap: wrap;
-	justify-content: flex-start;
+	justify-content: space-between;
+    align-items: center;
     padding: 0.5em 0.25em;
+    flex-flow: column;
 }
 
 div.filter label {
 	width: 100%;
+}
+
+div.filter form {
+    width: 100%;
+    display: flex;
+    flex-flow: column;
 }
 
 div#selector_checkbox {
