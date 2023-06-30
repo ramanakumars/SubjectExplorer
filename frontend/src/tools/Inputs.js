@@ -4,9 +4,9 @@ import MultiRangeSlider from "multi-range-slider-react";
 
 
 const parseValue = (value, type) => {
-	if (type === 'float') {
+	if (type.includes('float')) {
 		value = Number.parseFloat(value).toFixed(2);
-	} else if (type === 'int') {
+	} else if (type.includes('int')) {
 		value = parseInt(value);
 	} else {
 		value = '';
@@ -24,7 +24,7 @@ export class InputNumber extends React.Component {
 		super(props);
 
 		var step = 1;
-		if (props.type === 'float') {
+		if (props.type.includes('float')) {
 			step = 0.01;
 		}
 
@@ -85,7 +85,7 @@ export function Select({ id, var_name, variables, onChange }) {
 
 	useEffect(() => (
 		onChange(_value)
-	), [_value, onChange]);
+	), [_value]);
 
 	return (
 		<span>
@@ -145,7 +145,7 @@ export function InputMultiRange({ minValue, maxValue, step, type, text, onChange
 
 	useEffect(() => {
 		onChange(_minValue, _maxValue);
-	}, [_minValue, _maxValue, onChange]);
+	}, [_minValue, _maxValue]);
 
 	return (
 		<div className='slider'>
