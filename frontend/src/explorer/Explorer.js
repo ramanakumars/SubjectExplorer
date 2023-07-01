@@ -28,8 +28,7 @@ export default function Explorer({id, type}) {
 	const [_subjects, setSubjects] = useState([]);
 	const [_subject_count, setSubjectCount] = useState(0);
 	const [_data, setData] = useState([]);
-	const [_filtered_data, setFilteredData] = useState([]);
-	const [_filtered_subjects, setFilteredSubjects] = useState([]);
+	const [_filtered_data, setFilteredData] = useState([null, null]);
 	const [_layout, setLayout] = useState({});
 	const [_filters, setFilters] = useState([]);
 
@@ -81,6 +80,10 @@ export default function Explorer({id, type}) {
 	}
 
 	const createPlot = (plot_type, plot_variables) => {
+		if(plot_variables.x === "") {
+			return null;
+		}
+
 		var layout = {};
 		layout["hovermode"] = "closest";
 		layout["width"] = 1200;
@@ -135,6 +138,8 @@ export default function Explorer({id, type}) {
         var data = {};
         var subject_data = [];
 
+		console.log("refreshing");
+
         if (_data.length===0) {
             return undefined;
         }
@@ -171,9 +176,25 @@ export default function Explorer({id, type}) {
                 data.y.push(_data.y[i]);
             }
         }
+
+        if (_plot_type === "hist") {
+            var binstart = Math.floor(Math.min(...data.x));
+            var binend = Math.ceil(Math.max(...data.x));
+            var nbins = 50;
+            var binwidth = (binend - binstart) / nbins;
+
+            data = { ... data,
+                'xbins': { 'start': binstart, 'end': binend, 'size': binwidth },
+                'nbinsx': nbins,
+                'marker': { 'color': Array(nbins).fill(blue) }
+            };
+        } else if (_plot_type === "scatter") {
+            data = { ... data,
+                'marker': { 'color': Array(data.x.length).fill("dodgerblue") }
+            };
+        }
 		
-		setFilteredData(data);
-		setFilteredSubjects(subject_data);
+		setFilteredData([data, subject_data]);
 
 
 		/*
@@ -199,17 +220,13 @@ export default function Explorer({id, type}) {
 	}, [_data, _layout, _plot_type, _plot_variables, _subject_count, _subjects]);
 
 	useEffect(() => {
-		if(_filtered_data.x) {
-			if(_filtered_data.x.length > 0) {
+		if(_filtered_data[0]) {
+			if(_filtered_data[0].x.length === _filtered_data[1].length) {
 				setPlotReady(true);
 			}
 		}
-	}, [_filtered_data, _filtered_subjects])
+	}, [_filtered_data])
 
-	const addFilter = () => {
-
-	}
-	
 	const handleHover = (data) => {
         /*
          * function that handles the change of the hover image panel when
@@ -246,12 +263,11 @@ export default function Explorer({id, type}) {
 						{_is_plot_ready && 
 							<>
 								<SubjectPlotter 
-									key={_plot_type + "_" + _plot_variables.x + "_" + _plot_variables.y + "_" + _filtered_data.x.length}
-									data={[_filtered_data]}
+									data={[_filtered_data[0]]}
 									layout={_layout}
 									variables={_variables}
-									plot_name={_plot_type}
-									subject_data={_subjects}
+									plot_type={_plot_type}
+									subject_data={_filtered_data[1]}
 									handleHover={handleHover}
 									handleSelect={handleSelect}
 								/>
@@ -259,13 +275,13 @@ export default function Explorer({id, type}) {
 									<SubjectImages
 										variables={_variables}
 										render_type={"selection"}
-										subject_data={_filtered_subjects}
+										subject_data={_filtered_data[1]}
 										ref={subject_images}
 									/>
 									<SubjectImages
 										variables={_variables}
 										render_type={"hover"}
-										subject_data={_filtered_subjects}
+										subject_data={_filtered_data[1]}
 										ref={hover_images}
 									/>
 								</section>

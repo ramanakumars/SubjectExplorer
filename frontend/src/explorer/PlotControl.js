@@ -66,7 +66,7 @@ export function ChoosePlotType({ variables, handleSubmit }) {
 
 function VariablePicker({ plot_type, variables, handleChange }) {
 	const [_variables, setVariables] = useState(variables);
-	const [_plot_variables, setPlotVariables] = useState({ x: null, y: null });
+	const [_plot_variables, setPlotVariables] = useState({ x: "", y: "" });
 
 	useEffect(() => (
 		setVariables(variables)
@@ -95,6 +95,7 @@ function VariablePicker({ plot_type, variables, handleChange }) {
 				var_name='x'
 				variables={_variables}
 				onChange={choosePlotX}
+				value={_plot_variables.x}
 			/>
 			{plot_type === 'scatter' &&
 				<Select
@@ -102,6 +103,7 @@ function VariablePicker({ plot_type, variables, handleChange }) {
 					var_name='y'
 					variables={_variables}
 					onChange={choosePlotY}
+					value={_plot_variables.y}
 				/>
 			}
 		</div>

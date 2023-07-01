@@ -1,94 +1,6 @@
 import React, { useState, forwardRef, useEffect, createRef, createElement, useRef, useImperativeHandle } from "react";
 import { InputMultiRange, InputNumber, Select } from '../tools/Inputs'
 
-export function VariableFilter({ variable, type, checked, onChange }) {
-	const [_minValue, setMinValue] = useState(variable.minValue);
-	const [_maxValue, setMaxValue] = useState(variable.maxValue);
-	const [_checked, setChecked] = useState(checked);
-
-	useEffect(() => {
-		setMinValue(variable.minValue);
-		setMaxValue(variable.maxValue);
-	}, [variable]);
-
-	useEffect(() => {
-		setChecked(checked);
-	}, [checked]);
-
-	return (
-		<>
-			{variable != undefined && (
-				<div className='variable-control'>
-					{(type === 'range') && (
-						(
-							((variable.dtype.includes('float')) || (variable.dtype.includes('int'))) &&
-							<Subset
-								key={variable.name + "_range"}
-								variable={variable.name}
-								dtype={variable.dtype}
-								minValue={_minValue}
-								maxValue={_maxValue}
-								onChange={onChange}
-							/>
-						)
-					)}
-					{type === 'value' && (
-						((variable.dtype.includes('float')) || (variable.dtype.includes('int'))) && (
-							<InputNumber
-								key={variable.name + "_number"}
-								name={variable.name}
-								text={"Value"}
-								value={0}
-								type={variable.dtype}
-								minValue={_minValue}
-								maxValue={_maxValue}
-								onChange={onChange}
-							/>
-						) || (
-							variable.dtype.includes('bool') &&
-							<Selector
-								key={variable.name + "_selector"}
-								variable={variable.name}
-								checked={_checked}
-								onChange={onChange}
-							/>
-						)
-					)}
-
-				</div>
-			)
-			}
-		</>
-	)
-
-}
-
-export function Subset({ minValue, maxValue, variable, dtype, onChange }) {
-	const [currentMin, setMin] = useState(minValue);
-	const [currentMax, setMax] = useState(maxValue);
-
-	const changeMinMax = (minValue, maxValue) => {
-		setMin(minValue);
-		setMax(maxValue);
-
-		onChange([currentMin, currentMax]);
-	}
-
-	return (
-		<div className="filter">
-			<InputMultiRange
-				minValue={minValue}
-				maxValue={maxValue}
-				step={1}
-				type={dtype.includes('float') ? ('float') : ('int')}
-				text={'Filter by ' + variable}
-				onChange={changeMinMax}
-			/>
-		</div>
-	);
-
-}
-
 export function Selector({ checked, variable, onChange }) {
 	const [_checked, setChecked] = useState(checked);
 
@@ -154,7 +66,7 @@ export const FilterGroup = forwardRef(function FilterGroup({ variables, onChange
 			return true;
 		}
 		const filter_checks = filters.current.map((filter) => (filter.ref.current.checkMetadata(metadata)));
-		return filter_checks.some((value) => (value));
+		return filter_checks.every((value) => (value));
 	}
 
 	useImperativeHandle(ref, (metadata) => ({
@@ -172,8 +84,8 @@ export const FilterGroup = forwardRef(function FilterGroup({ variables, onChange
 });
 
 const Filter = forwardRef(function Filter({ id, variables, removeFilter, onChange }, ref) {
-	const [_selected_variable, selectVariable] = useState(null);
-	const [_filter_mode, setFilterMode] = useState(null);
+	const [_selected_variable, selectVariable] = useState("");
+	const [_filter_mode, setFilterMode] = useState("");
 	const [_possible_filter_modes, setPossibleFilterMode] = useState(null);
 	const [_filter_value, setFilterValue] = useState(null);
 	const [_is_locked, setLock] = useState(false);
@@ -186,27 +98,13 @@ const Filter = forwardRef(function Filter({ id, variables, removeFilter, onChang
 			} else {
 				setPossibleFilterMode([{ name: "range" }, { name: "value" }]);
 			}
+			console.log(_selected_variable.name);
 		}
 	}, [_selected_variable]);
 
-	const clickVariable = (vari) => {
-		var var_index;
-		var_index = variables.map((v) => (v.name)).indexOf(vari);
-		selectVariable(variables[var_index]);
-	}
-
-	const getFilter = (data) => {
-		if (_filter_mode == 'range') {
-			setFilterValue([...data]);
-		} else {
-			setFilterValue(data);
-		}
-		setFilled(true);
-	}
-
 	const checkMetadata = (metadata) => {
-		if ((!_is_filled) & (!_is_locked)) {
-			return false;
+		if ((!_is_filled) | (!_is_locked)) {
+			return true;
 		}
 
 		var value = metadata[_selected_variable.name];
@@ -220,58 +118,136 @@ const Filter = forwardRef(function Filter({ id, variables, removeFilter, onChang
 		}
 
 		if (_filter_mode === 'value') {
-			if (value == _filter_value) {
+			if (value === _filter_value) {
 				return true;
 			} else {
 				return false;
 			}
 		}
 	}
+	
+	useImperativeHandle(ref, (metadata) => ({
+		checkMetadata
+	}));
+	
+	useEffect(() => {
+		if(_filter_value) {
+			setFilled(true);
+		}
+	}, [_filter_value]);
+	
+	useEffect(() => {
+		if(_filter_mode !== "") {
+			if (!_filter_value) {
+				if(_filter_mode === 'range') {
+					setFilterValue([_selected_variable.minValue, _selected_variable.maxValue]);
+				} else if (_filter_mode === 'value') {
+					setFilterValue(0);
+				}
+			} 
+			setFilled(true);
+		} else {
+			setFilterValue(null);
+			setFilled(false);
+		}
+	}, [_filter_mode]);
+
+	useEffect(() => {
+		if (_is_locked) {
+			onChange();
+		}
+	}, [_is_locked]);
 
 	const checkAndLock = () => {
 		if (_is_filled) {
 			setLock(true);
-			onChange();
 		}
 	}
 
-	useImperativeHandle(ref, (metadata) => ({
-		checkMetadata
-	}));
+	const clickVariable = (vari) => {
+		var var_index;
+		var_index = variables.map((v) => (v.name)).indexOf(vari);
+		setFilterMode("");
+		selectVariable(variables[var_index]);
+	}
+
+	
+	const changeRange = (minValue, maxValue) => {
+		setFilterValue([minValue, maxValue]);
+	}
+
+	const changeValue = (value) => {
+		setFilterValue(value);
+	}
 
 	return (
 		<div className='filter'>
 			<input type='button' value='Delete filter!' onClick={() => removeFilter(id)} />
 			{(!_is_locked || !_is_filled) &&
-				<>
-					<form action='#' method='POST'>
+				<div className='filter-form'>
+					<Select
+						id='filter_variables'
+						var_name='Filter variable'
+						variables={variables}
+						onChange={clickVariable}
+						value={_selected_variable ? _selected_variable.name : ""}
+					/>
+					{(_selected_variable && _possible_filter_modes) &&
 						<Select
-							id='filter_variables'
-							var_name='Filter variable'
-							variables={variables}
-							onChange={clickVariable}
+							key={_selected_variable.name + "_select_filter_mode"}
+							id='filter_mode'
+							var_name='Filter type'
+							variables={_possible_filter_modes}
+							onChange={setFilterMode}
+							value={_filter_mode}
 						/>
-						{(_selected_variable && _possible_filter_modes) &&
-							<Select
-								key={_selected_variable.name + "_select_filter_mode"}
-								id='filter_mode'
-								var_name='Filter type'
-								variables={_possible_filter_modes}
-								onChange={setFilterMode}
-							/>
-						}
-						{(_selected_variable && _filter_mode) &&
-							<VariableFilter
-								key={_selected_variable.name}
-								variable={_selected_variable}
-								type={_filter_mode}
-								checked={false}
-								onChange={getFilter}
-							/>
-						}
-						<input type='button' value='Submit' onClick={checkAndLock} />
-					</form>
-				</>
+					}
+					{(_selected_variable && _filter_mode) &&
+						<div className='variable-control'>
+							{(_filter_mode === 'range') && (_filter_value) && (
+								(
+									((_selected_variable.dtype.includes('float')) || (_selected_variable.dtype.includes('int'))) &&
+									<div className="filter">
+										<InputMultiRange
+											key={_selected_variable.name + "_range"}
+											minValue={_selected_variable.minValue}
+											maxValue={_selected_variable.maxValue}
+											step={1}
+											type={_selected_variable.dtype.includes('float') ? ('float') : ('int')}
+											text={'Filter by ' + _selected_variable.name}
+											currentMin={_filter_value[0]}
+											currentMax={_filter_value[1]}
+											onChange={changeRange}
+										/>
+									</div>
+								)
+							)}
+							{_filter_mode === 'value' && (_filter_value != null) && (
+								((_selected_variable.dtype.includes('float')) || (_selected_variable.dtype.includes('int'))) && (
+									<InputNumber
+										key={_selected_variable.name + "_number"}
+										name={_selected_variable.name}
+										text={"Value"}
+										value={_filter_value}
+										type={_selected_variable.dtype}
+										minValue={_selected_variable.minValue}
+										maxValue={_selected_variable.maxValue}
+										onChange={changeValue}
+									/>
+								) || (
+									_selected_variable.dtype.includes('bool') &&
+									<Selector
+										key={_selected_variable.name + "_selector"}
+										_selected_variable={_selected_variable.name}
+										onChange={onChange}
+									/>
+								)
+							)}
+
+						</div>
+					}
+					<input type='button' value='Submit' onClick={checkAndLock} />
+				</div>
 			}
 			{(_is_locked && _is_filled) &&
 				<span>
