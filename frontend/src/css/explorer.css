@@ -160,7 +160,7 @@ div.filter label {
 	width: 100%;
 }
 
-div.filter form {
+div.filter-form {
     width: 100%;
     display: flex;
     flex-flow: column;
