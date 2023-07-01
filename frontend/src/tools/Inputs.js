@@ -80,12 +80,16 @@ export function Radio({ id, name, handleClick, checked }) {
 	)
 }
 
-export function Select({ id, var_name, variables, onChange }) {
-	const [_value, setValue] = useState("");
+export function Select({ id, var_name, variables, onChange, value }) {
+	const [_value, setValue] = useState(value);
 
-	useEffect(() => (
+	useEffect(() => {
+		setValue(value);
+	}, [value]);
+
+	useEffect(() => {
 		onChange(_value)
-	), [_value]);
+	}, [_value]);
 
 	return (
 		<span>
@@ -117,9 +121,9 @@ export function Select({ id, var_name, variables, onChange }) {
 }
 
 
-export function InputMultiRange({ minValue, maxValue, step, type, text, onChange }) {
-	const [_minValue, setMinValue] = useState(parseValue(minValue, type));
-	const [_maxValue, setMaxValue] = useState(parseValue(maxValue, type));
+export function InputMultiRange({ minValue, maxValue, step, type, text, onChange, currentMin, currentMax }) {
+	const [_minValue, setMinValue] = useState(parseValue(currentMin, type));
+	const [_maxValue, setMaxValue] = useState(parseValue(currentMax, type));
 	const absMin = parseValue(minValue, type);
 	const absMax = parseValue(maxValue, type);
 
