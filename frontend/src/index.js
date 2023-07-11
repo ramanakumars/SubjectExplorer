@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, useParams } from "react-router-dom";
 import "./css/main.css";
@@ -8,49 +8,34 @@ import "./css/project.css";
 import "./css/nav.css";
 import "./css/index.css";
 import MainNav from "./util/Nav.js";
-import Project from "./project/Project.js"
-import LoadingPage from "./util/LoadingPage.js"
+import { LoadingPage } from "./util/LoadingPage.js"
 import Explorer from "./explorer/Explorer";
 import { getProjects, getAvatarSrc } from "./util/zoo_utils"
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-
-function ProjectApp() {
-    const params = useParams();
-    return <Project project_id={params.id} />
-}
 
 function ExploreApp() {
     const params = useParams();
     return <Explorer id={params.id} type={params.type} />
 }
 
-class ProjectButton extends React.Component {
-    constructor(props) {
-        super(props);
+function ProjectButton({ id, name }) {
+    const [logo, setLogo] = useState('');
 
-        this.state = {
-            id: props.id,
-            name: props.name
-        };
-    }
-
-    componentDidMount = () => {
-        getAvatarSrc(this.state.id).then((url) => {
-            this.setState({logo: url})
+    useEffect(() => {
+        getAvatarSrc(id).then((url) => {
+            setLogo(url);
         });
-    }
+    }, [id]);
 
-    render() {
-        return (
-            <a href={"/explore/project/" + this.state.id}>
-                <div className='project-button'>
-                    <span>{this.state.name}</span>
-                    <img src={this.state.logo} className="project-button-img" alt={this.state.name + " logo"} />
-                </div>
-            </a>
-        )
-    }
+    return (
+        <a href={"/explore/project/" + id}>
+            <div className='project-button'>
+                <span>{name}</span>
+                <img src={logo} className="project-button-img" alt={name + " logo"} />
+            </div>
+        </a>
+    )
 }
 
 class Home extends React.Component {
@@ -78,7 +63,11 @@ class Home extends React.Component {
         return (
             <article id="main">
                 <MainNav />
-                <LoadingPage ref={this.loadingDiv} />
+                <LoadingPage 
+                    ref={this.loadingDiv}
+                    enable_default={false}
+                    text={"Loading projects..."}
+                />
                 <section id="index">
                     <section id="projects">
                         {this.state.project_data.map((project) => (
@@ -104,7 +93,6 @@ const App = () => {
             <BrowserRouter>
                 <Routes>
                     <Route exact path="/" element={<Home />} />
-                    <Route exact path="/project/:id" element={<ProjectApp />} />
                     <Route exact path="/explore/:type/:id" element={<ExploreApp />} />
                 </Routes>
             </BrowserRouter>
