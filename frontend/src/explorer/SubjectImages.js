@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { LoadingPage } from "../util/LoadingPage.js";
 import Subject from '../subject/Subject.js'
 
 
@@ -37,8 +36,20 @@ export default function SubjectImages({ subject_data, render_type }) {
         }
     }
 
-    const getExport = (e) => {
-
+    const getExport = () => {
+        var fields = Object.keys(subject_data[0])
+        var replacer = function(key, value) { return value === null ? '' : value } 
+        var csv = subject_data.map(function(row){
+          return fields.map(function(fieldName){
+            return JSON.stringify(row[fieldName], replacer)
+          }).join(',')
+        })
+        csv.unshift(fields.join(',')) // add header column
+        csv = csv.join('\n');
+        
+        const content = `data:text/csv;charset=utf-8,${csv}`;
+        const encodedURI = encodeURI(content);
+        window.open(encodedURI);
     }
 
 

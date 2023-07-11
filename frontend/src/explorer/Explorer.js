@@ -20,7 +20,7 @@ const filterNumericVars = (variables) => {
 	return vars;
 }
 
-export default function Explorer({id, type}) {
+export default function Explorer({id}) {
 	const [_variables, setVariables] = useState([]);
 	const [_plot_type, setPlotType] = useState("hist");
 	const [_plot_variables, setPlotVariables] = useState([]);
@@ -30,7 +30,6 @@ export default function Explorer({id, type}) {
 	const [_data, setData] = useState([]);
 	const [_filtered_data, setFilteredData] = useState([null, null]);
 	const [_layout, setLayout] = useState({});
-	const [_filters, setFilters] = useState([]);
 	const [_selected_data, setSelectedData] = useState([]);
 	const [_hover_data, setHoverData] = useState([]);
 
@@ -54,7 +53,7 @@ export default function Explorer({id, type}) {
 			});
 			loadingDiv.current.disable();
 		});
-	}, []);
+	}, [id]);
 
 	const refreshData = (data) => {
 		let variable_data = data.variables.map((variable) => {
@@ -167,7 +166,7 @@ export default function Explorer({id, type}) {
 
             data.x.push(_data.x[i]);
 			let subject = _subjects[i];
-			subject_data.push({ subject_ID: subject.subject_ID, url: subject.url });
+			subject_data.push({...subject});
 
             if ("y" in _data) {
                 data.y.push(_data.y[i]);

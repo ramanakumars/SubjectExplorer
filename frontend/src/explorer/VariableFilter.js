@@ -98,7 +98,6 @@ const Filter = forwardRef(function Filter({ id, variables, removeFilter, onChang
 			} else {
 				setPossibleFilterMode([{ name: "range" }, { name: "value" }]);
 			}
-			console.log(_selected_variable.name);
 		}
 	}, [_selected_variable]);
 
