@@ -5,7 +5,7 @@ import SubjectImages from './SubjectImages'
 import { ChoosePlotType, PlotConfigureHist } from './PlotControl'
 import { FilterGroup } from './VariableFilter'
 import { getSubjectsFromProject } from "../util/zoo_utils.js";
-import LoadingPage from "../util/LoadingPage.js";
+import { LoadingPage } from "../util/LoadingPage.js";
 
 const plotly_type = { 'hist': 'histogram', 'scatter': 'scattergl' };
 
@@ -31,15 +31,14 @@ export default function Explorer({id, type}) {
 	const [_filtered_data, setFilteredData] = useState([null, null]);
 	const [_layout, setLayout] = useState({});
 	const [_filters, setFilters] = useState([]);
+	const [_selected_data, setSelectedData] = useState([]);
+	const [_hover_data, setHoverData] = useState([]);
 
 	const loadingDiv = useRef(null);
-	const subject_images = useRef(null);
-	const hover_images = useRef(null);
 	const filter_group = useRef(null);
 
 	useEffect(() => {
 		loadingDiv.current.enable();
-		loadingDiv.current.setState({ text: 'Getting subjects...' });
 		getSubjectsFromProject(id).then((subjects_data) => {
 			let subjects = subjects_data.subjects;
 			let variables = subjects_data.variables;
@@ -55,7 +54,7 @@ export default function Explorer({id, type}) {
 			});
 			loadingDiv.current.disable();
 		});
-	}, [id, type]);
+	}, []);
 
 	const refreshData = (data) => {
 		let variable_data = data.variables.map((variable) => {
@@ -138,8 +137,6 @@ export default function Explorer({id, type}) {
         var data = {};
         var subject_data = [];
 
-		console.log("refreshing");
-
         if (_data.length===0) {
             return undefined;
         }
@@ -190,7 +187,7 @@ export default function Explorer({id, type}) {
             };
         } else if (_plot_type === "scatter") {
             data = { ... data,
-                'marker': { 'color': Array(data.x.length).fill("dodgerblue") }
+                'marker': { 'color': Array(data.x.length).fill(blue) }
             };
         }
 		
@@ -225,6 +222,8 @@ export default function Explorer({id, type}) {
 				setPlotReady(true);
 			}
 		}
+		setHoverData([]);
+		setSelectedData(_filtered_data[1]);
 	}, [_filtered_data])
 
 	const handleHover = (data) => {
@@ -232,7 +231,8 @@ export default function Explorer({id, type}) {
          * function that handles the change of the hover image panel when
          * hovering over the plotly component
          */
-        hover_images.current.setState({ subject_data: data, page: 0 });
+        //hover_images.current.setState({ subject_data: data, page: 0 });
+		setHoverData(data);
     }
 
 	const handleSelect = (data) => {
@@ -240,13 +240,18 @@ export default function Explorer({id, type}) {
          * function that handles the change of the selection image panel when
          * lasso or box selecting data in the plotly component
          */
-        subject_images.current.setState({ subject_data: data, page: 0 });
+        //subject_images.current.setState({ subject_data: data, page: 0 });
+		setSelectedData(data);
     }
 
 	return (
 			<article id="main">
 				<MainNav target="explore" />
-				<LoadingPage ref={loadingDiv} enable={false} />
+				<LoadingPage 
+					ref={loadingDiv}
+					enable_default={false}
+					text={"Getting subject data..."}
+				/>
 				<section id='app'>
 					<section id='plot-info'>
 						<ChoosePlotType
@@ -273,16 +278,12 @@ export default function Explorer({id, type}) {
 								/>
 								<section id="images-container">
 									<SubjectImages
-										variables={_variables}
+										subject_data={_selected_data}
 										render_type={"selection"}
-										subject_data={_filtered_data[1]}
-										ref={subject_images}
 									/>
 									<SubjectImages
-										variables={_variables}
+										subject_data={_hover_data}
 										render_type={"hover"}
-										subject_data={_filtered_data[1]}
-										ref={hover_images}
 									/>
 								</section>
 							</>

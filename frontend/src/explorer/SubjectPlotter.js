@@ -22,10 +22,9 @@ export default function SubjectPlotter({ data, layout, subject_data, plot_type, 
             colors = new Array(_data[0].marker.color.length).fill(blue);
             colors[event_data.points[0].binNumber] = red;
         } else if (plot_type === "scatter") {
-            for (var i = 0; i < event_data.points.length; i++) {
-                _subject_data.push(subject_data[event_data.points[i].pointNumber]);
-                colors[event_data.points[i].pointNumber] = red;
-            }
+            _subject_data = event_data.points.map((point) => (subject_data[point.pointNumber]));
+            colors = new Array(_data[0].marker.color.length).fill(blue);
+            colors[event_data.points[0].pointNumber] = red;
         }
 
         var state_data = _data[0];
@@ -76,7 +75,7 @@ export default function SubjectPlotter({ data, layout, subject_data, plot_type, 
                 <Plot
                     data={_data}
                     layout={layout}
-                    onHover={_handleHover}
+                    onClick={_handleHover}
                     onSelected={_handleSelect}
                     onDeselect={_resetSelection}
                 />
