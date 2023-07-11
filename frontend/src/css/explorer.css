@@ -66,7 +66,7 @@ label.plot-type:hover {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     box-sizing: border-box;
 }
@@ -150,7 +150,7 @@ div.image-page button:hover {
 div.filter {
 	width: 100%;
 	display: flex;
-	justify-content: space-between;
+	justify-content: center;
     align-items: center;
     padding: 0.5em 0.25em;
     flex-flow: column;
@@ -306,4 +306,16 @@ div#configure-hist {
 div.variable-control {
     width: 100%;
     max-width: 350px;
+}
+
+section#create-filter {
+    width: 100%;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+}
+
+section#create-filter input[type='button'] {
+    width: 12.5em;
 }
