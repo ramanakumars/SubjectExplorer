@@ -70,8 +70,9 @@ export function Radio({ id, name, handleClick, checked }) {
 				name="plot-type"
 				className="plot-type"
 				id={id}
+				value={id}
 				onChange={handleClick}
-				defaultChecked={checked}
+				checked={checked}
 			/>
 			<label htmlFor={id} className="radio plot-type">
 				{name}
