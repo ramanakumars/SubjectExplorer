@@ -200,6 +200,11 @@ export default function Explorer({id}) {
             var binstart = Math.floor(Math.min(...data.x));
             var binend = Math.ceil(Math.max(...data.x));
             var nbins = _plot_config.nbins;
+
+			if(!nbins) {
+				nbins = 50;
+			}
+
             var binwidth = (binend - binstart) / nbins;
 
             data = { ... data,
