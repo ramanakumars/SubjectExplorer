@@ -115,7 +115,6 @@ div.subject-images-container {
 }
 
 div.subject-images-container span {
-    max-width: 150px;
     max-height: 150px;
     margin: 0.15em;
     padding: 0.15em;
