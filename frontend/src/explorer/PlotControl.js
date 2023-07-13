@@ -41,13 +41,13 @@ export function ChoosePlotType({ variables, handleSubmit }) {
 					id='hist'
 					name='Histogram'
 					handleClick={handleChoosePlotType}
-					checked={true}
+					checked={_chosen==="hist"}
 				/>
 				<Radio
 					id='scatter'
 					name='Scatter plot'
 					handleClick={handleChoosePlotType}
-					checked={false}
+					checked={_chosen==="scatter"}
 				/>
 			</div>
 			<VariablePicker
