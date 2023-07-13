@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import MainNav from "../util/Nav.js";
 import SubjectPlotter, { blue } from './SubjectPlotter'
 import SubjectImages from './SubjectImages'
-import { ChoosePlotType, PlotConfigureHist } from './PlotControl'
+import { ChoosePlotType } from './PlotControl'
+import { PlotConfigureHist } from './Configure'
 import { FilterGroup } from './VariableFilter'
 import { getSubjectsFromProject } from "../util/zoo_utils.js";
 import { LoadingPage } from "../util/LoadingPage.js";
@@ -32,6 +33,8 @@ export default function Explorer({id}) {
 	const [_layout, setLayout] = useState({});
 	const [_selected_data, setSelectedData] = useState([]);
 	const [_hover_data, setHoverData] = useState([]);
+	const [_filters, updateFilters] = useState([]);
+	const [_plot_config, setPlotConfig] = useState({});
 
 	const loadingDiv = useRef(null);
 	const filter_group = useRef(null);
@@ -54,6 +57,20 @@ export default function Explorer({id}) {
 			loadingDiv.current.disable();
 		});
 	}, [id]);
+	
+	useEffect(() => {
+		refreshPlot();
+	}, [_data, _plot_type, _plot_variables, _subject_count, _subjects, _filters, _plot_config]);
+
+	useEffect(() => {
+		if(_filtered_data[0]) {
+			if(_filtered_data[0].x.length === _filtered_data[1].length) {
+				setPlotReady(true);
+			}
+		}
+		setHoverData([]);
+		setSelectedData(_filtered_data[1]);
+	}, [_filtered_data])
 
 	const refreshData = (data) => {
 		let variable_data = data.variables.map((variable) => {
@@ -129,7 +146,13 @@ export default function Explorer({id}) {
 		setData(data);
         setLayout(layout);
         setPlotType(plot_type);
-		setPlotVariables(plot_variables);
+		setPlotVariables(
+			Object.fromEntries(
+				Object.entries(plot_variables).map(([key, val]) => (
+					[key, _variables.filter(({name }) => val.includes(name))[0]]
+				))
+			)
+		);
 	}
 
 	const refreshPlot = () => {
@@ -176,7 +199,7 @@ export default function Explorer({id}) {
         if (_plot_type === "hist") {
             var binstart = Math.floor(Math.min(...data.x));
             var binend = Math.ceil(Math.max(...data.x));
-            var nbins = 50;
+            var nbins = _plot_config.nbins;
             var binwidth = (binend - binstart) / nbins;
 
             data = { ... data,
@@ -190,47 +213,20 @@ export default function Explorer({id}) {
             };
         }
 		
+		setLayout({..._layout, 
+			yaxis: {
+				type: _plot_config.scale
+			}
+		});
 		setFilteredData([data, subject_data]);
-
-
-		/*
-        // set the data for the main set of subject images at the bottom
-        subject_images.current.setState({ subject_data: subject_data });
-
-        // set the data for the images on hover on the right
-        // by default only sets the first element of the subject list
-        hover_images.current.setState({ subject_data: [subject_data[0]] });
-
-        // set the data for the plotly component
-        subject_plotter.current.setState({
-            data: [data],
-            layout: _layout,
-            subject_data: subject_data,
-            plot_name: _plot_type,
-        });
-		*/
 	}
 
-	useEffect(() => {
-		refreshPlot();
-	}, [_data, _layout, _plot_type, _plot_variables, _subject_count, _subjects]);
-
-	useEffect(() => {
-		if(_filtered_data[0]) {
-			if(_filtered_data[0].x.length === _filtered_data[1].length) {
-				setPlotReady(true);
-			}
-		}
-		setHoverData([]);
-		setSelectedData(_filtered_data[1]);
-	}, [_filtered_data])
 
 	const handleHover = (data) => {
         /*
          * function that handles the change of the hover image panel when
          * hovering over the plotly component
          */
-        //hover_images.current.setState({ subject_data: data, page: 0 });
 		setHoverData(data);
     }
 
@@ -239,7 +235,6 @@ export default function Explorer({id}) {
          * function that handles the change of the selection image panel when
          * lasso or box selecting data in the plotly component
          */
-        //subject_images.current.setState({ subject_data: data, page: 0 });
 		setSelectedData(data);
     }
 
@@ -260,8 +255,15 @@ export default function Explorer({id}) {
 						<FilterGroup
 							ref={filter_group}
 							variables={filterNumericVars(_variables)}
-							onChange={refreshPlot}
+							onChange={() => updateFilters(Math.random())}
 						/>
+						{ _is_plot_ready && _plot_type === "hist" &&
+							<PlotConfigureHist
+								variable={_plot_variables.x}
+								onChange={setPlotConfig}
+							/>
+						}
+
 					</section>
 					<section id='plot-container'>
 						{_is_plot_ready && 
