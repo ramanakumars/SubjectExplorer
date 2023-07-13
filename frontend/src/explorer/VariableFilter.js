@@ -58,8 +58,11 @@ export const FilterGroup = forwardRef(function FilterGroup({ variables, onChange
 		}
 		filters.current = new_filters;
 		setFilters(new_filters);
-		onChange();
 	}
+
+	useEffect(() => {
+		onChange();
+	}, [_filters]);
 
 	const checkMetadata = (metadata) => {
 		if (filters.current.length === 0) {
