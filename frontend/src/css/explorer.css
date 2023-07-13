@@ -109,20 +109,20 @@ div.subject-images-container {
 
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-evenly;
     align-content: flex-start;
 	border: 0.25em dashed #2e86c1;
 }
 
 div.subject-images-container span {
-    max-height: 150px;
-    margin: 0.15em;
     padding: 0.15em;
+    height: 140px;
+    width: auto;
 }
 
 div.subject-images-container img {
-    width: 100%;
-    max-width: 300px;
+    width: auto;
+    height: 100%;
 }
 
 div.subject-images-container-hover {
