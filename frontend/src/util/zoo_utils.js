@@ -25,6 +25,17 @@ export const getJSONData = async (url) => {
 	});
 }
 
+export const getSubjectTalkPage = async (subject_id) => {
+	return getJSONData("https://www.zooniverse.org/api/subjects/" + subject_id)
+		.then((data) => getJSONData("https://www.zooniverse.org/api/projects/" + data.subjects[0].links.project)
+				.then((project_data) => {
+					return "https:///www.zooniverse.org/projects/" + project_data.projects[0].slug + "/talk/subjects/" + subject_id;
+				}
+				)
+		)
+
+}
+
 export const getProjects = async () => {
 	const project_ids = [17032, 16696, 14993, 16747, 7929]
 
