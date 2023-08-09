@@ -1,6 +1,15 @@
-# JuDE (JunoCam Data Explorer)
+# Zooniverse Subject Explorer
 
-## Building and running the docker container (development)
+The goal of this app is to explore subject metadata of projects hosted on Zooniverse.
+
+## Building and running the Docker container
+
+Run the docker using the following command which will host the app on port 80:
+```
+docker-compose -f docker-compose.yml up --build
+```
+
+## Building and running the development version
 
 ### Starting the backend
 Install the requirments and run the flask app. From the main repo folder, run:
