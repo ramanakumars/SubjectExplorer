@@ -54,49 +54,6 @@ export function InputNumber({minValue, maxValue, value, text, name, type, onChan
 
 }
 
-export class InputNumberOld extends React.Component {
-	constructor(props) {
-		super(props);
-
-		var step = 1;
-		if (props.type.includes('float')) {
-			step = 0.01;
-		}
-
-		this.state = {
-			minValue: parseValue(props.minValue, props.type),
-			maxValue: parseValue(props.maxValue, props.type),
-			value: parseValue(props.value, props.type),
-			text: props.text,
-			name: props.name,
-			type: props.type,
-			step: step
-		}
-	}
-
-	onChange = (e) => {
-		var value = parseValue(e.target.value, this.state.type);
-		this.setState({ value: value });
-		this.props.onChange(value);
-	}
-
-	render() {
-		return (
-			<span>
-				<label htmlFor={this.state.name}>{this.state.text}: </label>
-				<input type='text'
-					name={this.state.name}
-					onMouseOut={this.onChange}
-					value={this.state.value}
-					min={this.state.minValue}
-					max={this.state.maxValue}
-					step={this.state.step}
-				/>
-			</span>
-		)
-	}
-}
-
 export function Radio({ id, name, checked }) {
 	return (
 		<span>
