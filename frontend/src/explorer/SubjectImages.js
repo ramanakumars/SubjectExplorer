@@ -1,6 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Subject from '../subject/Subject.js'
+import { LoadingPage } from '../util/LoadingPage'
 
+
+function download(content, fileName, mimeType) {
+        var a = document.createElement('a');
+        mimeType = mimeType || 'application/octet-stream';
+
+        if (navigator.msSaveBlob) { // IE10
+            return navigator.msSaveBlob(new Blob([content], { type: mimeType }),     fileName);
+        } else if ('download' in a) { //html5 A[download]
+            var csvData = new Blob([content], { type: mimeType });
+            var csvUrl = URL.createObjectURL(csvData);
+            //a.href = 'data:' + mimeType + ',' + encodeURIComponent(content);
+            a.href = csvUrl;
+            a.setAttribute('download', fileName);
+            document.body.appendChild(a);
+            a.click();
+            return true;
+        } else { //do iframe dataURL download (old ch+FF):
+            var f = document.createElement('iframe');
+            document.body.appendChild(f);
+            f.src = 'data:' + mimeType + ',' + encodeURIComponent(content);
+
+            setTimeout(function() {
+                document.body.removeChild(f);
+            }, 333);
+            return true;
+        }
+}
 
 export default function SubjectImages({ subject_data, render_type }) {
     const [currentPage, setPage] = useState(0);
@@ -8,6 +36,8 @@ export default function SubjectImages({ subject_data, render_type }) {
     const [npages, setnPages] = useState(0);
 
     const nimages = 16;
+	
+    const loadingDiv = useRef(null);
 
     useEffect(() => {
         setnPages(Math.ceil(subject_data.length / nimages));
@@ -37,21 +67,22 @@ export default function SubjectImages({ subject_data, render_type }) {
     }
 
     const getExport = () => {
+		loadingDiv.current.enable();
+        console.log('Getting data for ' + subject_data.length + ' subjects');
         var fields = Object.keys(subject_data[0])
-        var replacer = function(key, value) { return value === null ? '' : value } 
-        var csv = subject_data.map(function(row){
-          return fields.map(function(fieldName){
+        var replacer = (key, value) => ( value === null ? '' : value );
+        Promise.all(subject_data.map(function(row){
+          return fields.map(function(fieldName) {
             return JSON.stringify(row[fieldName], replacer)
           }).join(',')
+        })).then((csv) => {
+            csv.unshift(fields.join(',')) // add header column
+            csv = csv.join('\r\n');
+            download(csv, 'subject_data.csv', 'text/csv')
+            loadingDiv.current.disable();
         })
-        csv.unshift(fields.join(',')) // add header column
-        csv = csv.join('\n');
         
-        const content = `data:text/csv;charset=utf-8,${csv}`;
-        const encodedURI = encodeURI(content);
-        window.open(encodedURI);
     }
-
 
     return (
         <div
@@ -60,6 +91,11 @@ export default function SubjectImages({ subject_data, render_type }) {
                     render_type
             }
         >
+            <LoadingPage 
+                ref={loadingDiv}
+                enable_default={false}
+                text={"Collecting subject data..."}
+            />
             <div className="image-page">
                 <button onClick={prevPage}>&laquo;</button>
                 {currentPage + 1} / {npages}
