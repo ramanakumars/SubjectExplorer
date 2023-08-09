@@ -52,7 +52,7 @@ export const FilterGroup = forwardRef(function FilterGroup({ variables, onChange
 	const removeFilter = (id) => {
 		var new_filters = [];
 		for (var filter of filters.current) {
-			if (filter.props.id != id) {
+			if (filter.props.id !== id) {
 				new_filters.push(filter);
 			}
 		}
@@ -224,7 +224,7 @@ const Filter = forwardRef(function Filter({ id, variables, removeFilter, onChang
 									</div>
 								)
 							)}
-							{_filter_mode === 'value' && (_filter_value != null) && (
+							{(_filter_mode === 'value') && (_filter_value != null) && (
 								((_selected_variable.dtype.includes('float')) || (_selected_variable.dtype.includes('int'))) && (
 									<InputNumber
 										key={_selected_variable.name + "_number"}
