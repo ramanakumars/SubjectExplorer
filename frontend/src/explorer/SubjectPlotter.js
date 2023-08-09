@@ -7,10 +7,17 @@ export const red = "#922b21";
 export default function SubjectPlotter({ data, layout, subject_data, plot_type, handleHover, handleSelect }) {
 
     const [_data, setData] = useState(null);
+    const [_is_plot_ready, setPlotReady] = useState(false);
 
     useEffect(() => {
         setData(data);
     }, [data]);
+
+    useEffect(() => {
+        if (_data && layout) {
+            setPlotReady(true);
+        }
+    }, [_data, layout]);
 
     const _handleHover = (event_data) => {
         var _subject_data;
@@ -71,7 +78,7 @@ export default function SubjectPlotter({ data, layout, subject_data, plot_type, 
 
     return (
         <>
-            {(_data && layout) ? (
+            { _is_plot_ready ? (
                 <Plot
                     data={_data}
                     layout={layout}
