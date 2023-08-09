@@ -6,3 +6,4 @@ tqdm
 panoptes_client
 gunicorn
 markupsafe==2.0.1
+pyyaml

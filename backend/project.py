@@ -1,4 +1,4 @@
-from .utils import NpEncoder
+from utils import NpEncoder
 from panoptes_client import Workflow, SubjectSet
 import json
 import tqdm
