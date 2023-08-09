@@ -1,149 +1,115 @@
-import React from "react";
-import LoadingPage from "../util/LoadingPage.js";
+import React, { useState, useEffect, useRef } from "react";
 import Subject from '../subject/Subject.js'
+import { LoadingPage } from '../util/LoadingPage'
 
 
-export default class SubjectImages extends React.Component {
-    constructor(props) {
-        super(props);
-        // this.state = {};
-        var nmax = 16;
+function download(content, fileName, mimeType) {
+    var a = document.createElement('a');
+    mimeType = mimeType || 'application/octet-stream';
 
-        this.state = {
-            variables: props.variables,
-            n_vars: props.variables.length,
-            subject_data: props.subject_data,
-            render_type: props.render_type,
-            page: 0,
-            nimages: nmax
-        };
+    if (navigator.msSaveBlob) { // IE10
+        return navigator.msSaveBlob(new Blob([content], { type: mimeType }),     fileName);
+    } else if ('download' in a) { //html5 A[download]
+        var csvData = new Blob([content], { type: mimeType });
+        var csvUrl = URL.createObjectURL(csvData);
+        a.href = csvUrl;
+        a.setAttribute('download', fileName);
+        document.body.appendChild(a);
+        a.click();
+        return true;
+    } else { //do iframe dataURL download (old ch+FF):
+        var f = document.createElement('iframe');
+        document.body.appendChild(f);
+        f.src = 'data:' + mimeType + ',' + encodeURIComponent(content);
 
-        this.prevPage = this.prevPage.bind(this);
-        this.nextPage = this.nextPage.bind(this);
-        this.getExport = this.getExport.bind(this);
-
-        this.loading_page = React.createRef();
-    }
-
-    prevPage(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (this.state.page > 0) {
-            this.setState({ page: this.state.page - 1 });
-        }
-
-        return false;
-    }
-
-    nextPage(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (this.state.page < this.npages - 1) {
-            this.setState({ page: this.state.page + 1 });
-        }
-        return false;
-    }
-
-    getExport() {
-        var postdata = { subject_IDs: this.state.subject_data.map((data) => data.subject_ID) };
-
-        this.loading_page.current.enable();
-
-        // send to the backend
-        fetch("/backend/create-export/", {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            // the input/output are in JSON format
-            body: JSON.stringify(postdata),
-        })
-            .then((result) => result.json())
-            .then((data) => {
-                if (!data.error) {
-                    // create a link holding the file download
-                    const element = document.createElement("a");
-
-                    // save the file blob
-                    const file = new Blob([data.filedata], {
-                        type: "text/csv",
-                    });
-
-                    // save the link attributes
-                    element.href = URL.createObjectURL(file);
-                    element.download = "subject_export.csv";
-
-                    // append to body (for Firefox)
-                    document.body.appendChild(element);
-
-                    // click on the link to download the file
-                    element.click();
-
-                    // cleanup
-                    element.remove();
-                    this.loading_page.current.disable();
-                } else {
-                }
-            });
-    }
-
-    render() {
-        if (this.state.subject_data == null) {
-            return null;
-        }
-
-        this.npages = Math.ceil(this.state.subject_data.length / this.state.nimages);
-
-        var subject_data = [];
-
-        const startind = this.state.page * this.state.nimages;
-
-        for (
-            var i = startind;
-            i < Math.min(this.state.subject_data.length, startind + this.state.nimages);
-            i++
-        ) {
-            subject_data.push({
-                ...this.state.subject_data[i]
-            });
-        }
-
-        var style = {};
-
-        if (this.state.subject_data.length < 1) {
-            return null;
-        }
-
-        var rand_key = Math.random();
-
-        return (
-            <div
-                key={rand_key}
-                className={
-                    "subject-images-container subject-images-container-" +
-                        this.state.render_type
-                }
-            >
-                <div className="image-page">
-                    <button onClick={this.prevPage}>&laquo;</button>
-                    {this.state.page + 1} / {this.npages}
-                    <button onClick={this.nextPage}>&raquo;</button>
-                </div>
-                {subject_data.map(data => (
-                    <Subject
-                        key={data.subject_ID + "_" + this.state.render_type}
-                        metadata={data}
-                        style={style}
-                    />
-                ))}
-
-                <div className="subject-export-container">
-                    <button onClick={this.getExport}>Export subjects</button>
-                </div>
-                <LoadingPage ref={this.loading_page} enable={false} />
-            </div>
-        );
+        setTimeout(function() {
+            document.body.removeChild(f);
+        }, 333);
+        return true;
     }
 }
 
+export default function SubjectImages({ subject_data, render_type }) {
+    const [currentPage, setPage] = useState(0);
+    const [visibleData, setVisibleData] = useState([]);
+    const [npages, setnPages] = useState(0);
+
+    const nimages = 16;
+	
+    const loadingDiv = useRef(null);
+
+    useEffect(() => {
+        setnPages(Math.ceil(subject_data.length / nimages));
+        setPage(0);
+    }, [subject_data]);
+
+    useEffect(() => {
+        const startind = nimages * currentPage;
+        const data_subset = subject_data.slice(startind, startind + nimages);
+        setVisibleData(data_subset);
+    }, [subject_data, currentPage]);
+    
+    const prevPage = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (currentPage > 0) {
+            setPage(currentPage - 1);
+        }
+    }
+
+    const nextPage = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (currentPage < npages - 1) {
+            setPage(currentPage + 1);
+        }
+    }
+
+    const getExport = () => {
+		loadingDiv.current.enable();
+        console.log('Getting data for ' + subject_data.length + ' subjects');
+        var fields = Object.keys(subject_data[0])
+        var replacer = (key, value) => ( value === null ? '' : value );
+        Promise.all(subject_data.map(function(row){
+          return fields.map(function(fieldName) {
+            return JSON.stringify(row[fieldName], replacer)
+          }).join(',')
+        })).then((csv) => {
+            csv.unshift(fields.join(',')) // add header column
+            csv = csv.join('\r\n');
+            download(csv, 'subject_data.csv', 'text/csv')
+            loadingDiv.current.disable();
+        })
+        
+    }
+
+    return (
+        <div
+            className={
+                "subject-images-container subject-images-container-" +
+                    render_type
+            }
+        >
+            <LoadingPage 
+                ref={loadingDiv}
+                enable_default={false}
+                text={"Collecting subject data..."}
+            />
+            <div className="image-page">
+                <button onClick={prevPage}>&laquo;</button>
+                {currentPage + 1} / {npages}
+                <button onClick={nextPage}>&raquo;</button>
+            </div>
+            {visibleData.map(data => (
+                <Subject
+                    key={data.subject_ID + "_" + render_type}
+                    metadata={data}
+                />
+            ))}
+
+            <div className="subject-export-container">
+                <button onClick={getExport}>Export subjects</button>
+            </div>
+        </div>
+    )
+}

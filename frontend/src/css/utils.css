@@ -1,0 +1,56 @@
+div.slider {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+div.slider-input {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+div.slider span.slider-min, div.slider span.slider-max {
+    display: block;
+    width: 25%;
+    box-sizing: border-box;
+    min-width: 3em;
+}
+
+div.slider div.slider-range {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+div.editable-text {
+    width: 100%;
+    display: block;
+    margin: 0.125em;
+    box-sizing: border-box;
+}
+
+div.editable-text span {
+    text-align: center;
+    width:100%;
+    font-size: 0.9em;
+    border: 2px solid var(--secondary);
+    background-color: var(--dark);
+    box-sizing: border-box;
+    border-radius: 0.25em;
+    height: 2em;
+    padding: 0.25em;
+    display: block;
+}
+
+div.editable-text input {
+    font-family: inherit;
+    text-align: center;
+    width: 100%;
+    height: 2em;
+    box-sizing: border-box;
+}

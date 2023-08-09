@@ -1,20 +1,31 @@
-# JuDE (JunoCam Data Explorer)
-JuDE is a React/Flask-based web app to explore the [Jovian Vortex Hunter](https://www.zooniverse.org/projects/ramanakumars/jovian-vortex-hunter) data
+# Zooniverse Subject Explorer
 
-## Building and running the docker container
+The goal of this app is to explore subject metadata of projects hosted on Zooniverse.
 
-Before starting the docker container, you will need to provide your Zooniverse username and password to the container, so that the updated subject data can be downloaded. This will be provided via two files (`panoptes_username` and `panoptes_password`):
-```bash
-echo [your zooniverse username] >> panoptes_username
-echo [your zooniverse password] >> panoptes_password
+## Building and running the Docker container
+
+Run the docker using the following command which will host the app on port 80:
+```
+docker-compose -f docker-compose.yml up --build
 ```
 
-Next, copy the SSL certificates (for the production version) to the repo main folder. This includes the certificate (`fullchain.pem`) and the private key (`privkey.pem`)
+## Building and running the development version
 
-Finally, start the docker using the `compose` command (from the main repo folder):
-```bash
-docker-compose build
-docker-compose up
+### Starting the backend
+Install the requirments and run the flask app. From the main repo folder, run:
+```
+python3 -m pip install -r backend/requirements.txt
+python3 -m backend.app
 ```
 
-This will start both the frontend and backend on `localhost` (port 443). The backend will download the subject data from Panoptes, which will take time, so wait until you see the backend `gunicorn` server spin up.
+This starts the backend server on `localhost:5000`.
+
+### Starting the frontend
+The frontend uses React, and you can start the server using NodeJS:
+```
+cd frontend/
+npm i
+npm run start
+```
+
+The app can then be accessed on `localhost:3000`.

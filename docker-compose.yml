@@ -5,9 +5,6 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.backend
     image: jude-backend
-    secrets:
-      - panoptes_username
-      - panoptes_password
   frontend:
     build:
       context: .
@@ -18,10 +15,4 @@ services:
     volumes:
       - ./frontend/:/app
     ports:
-      - "443:443"
-
-secrets:
-  panoptes_username:
-    file: ./panoptes_username
-  panoptes_password:
-    file: ./panoptes_password
+      - "80:80"

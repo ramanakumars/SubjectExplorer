@@ -1,10 +1,9 @@
 from .utils import NpEncoder
-from panoptes_client import Workflow, Project, SubjectSet
+from panoptes_client import Workflow, SubjectSet
 import json
 import tqdm
 import os
 import numpy as np
-from astropy.io import ascii
 from flask import Blueprint
 import urllib.request as request
 
@@ -15,7 +14,10 @@ project_subject_sets = {
               112381, 112397, 112398, 112399, 112400,
               112471, 112499, 112852, 112856, 112864,
               112873, 112874, 112937, 112938, 112968,
-              112969, 112996, 112997]
+              112969, 112996, 112997],
+    '17032': [105808],
+    '16747': [114147],
+    '7929': [113609]
 }
 BATCH_SIZE = 200
 
@@ -43,8 +45,6 @@ def get_workflow_data(workflow_id):
 
 @project_bp.route('/backend/get-project-subjects/<project_id>', methods=['GET'])
 def get_project_data(project_id):
-    project = Project(project_id)
-
     if project_id not in project_subject_sets:
         return json.dumps({'error': f'Project {project_id} is not set up yet'})
     subject_sets = project_subject_sets[project_id]
@@ -55,16 +55,17 @@ def get_project_data(project_id):
         sset.reload()
         n_subjects += sset.set_member_subjects_count
 
+    print(f'Project {project_id} has {n_subjects} subjects')
+
     if os.path.exists(f'{project_id}_subjects.json'):
         with open(f'{project_id}_subjects.json', 'r') as infile:
             data = json.load(infile)
         print(f'Loading {len(data)} subjects from {project_id}_subjects.json')
-        if len(data) != n_subjects:
-            get_subjects_for_project(project_id, n_subjects)
     else:
         get_subjects_for_project(project_id, n_subjects)
 
     subjects_data, variables, dtypes = process_subjects_from_json(f'{project_id}_subjects.json')
+    print(f'Loaded subject data from {project_id}_subjects.json')
 
     return json.dumps({'subjects': subjects_data, 'variables': variables, 'dtypes': dtypes}, cls=NpEncoder)
 
@@ -97,7 +98,7 @@ def get_subjects_for_workflow(workflow_id):
     subjects = []
 
     subjects = get_subjects_from_subject_sets(subject_sets, workflow.subjects_count)
-    
+
     with open(f'{workflow_id}_subjects.json', 'w') as outfile:
         json.dump(subjects, outfile)
 
@@ -109,8 +110,8 @@ def get_subjects_from_subject_sets(subject_sets, n_subjects):
         for subject_set in subject_sets:
             page = 1
             while page is not None:
-                pbar.set_postfix({'page': page, 'subject_set_id': subject_set.id})
-                req = request.Request(f"https://www.zooniverse.org/api/subjects/?subject_set_id={subject_set.id}&page_size={BATCH_SIZE}&page={page}")
+                pbar.set_postfix({'page': page, 'subject_set_id': subject_set})
+                req = request.Request(f"https://www.zooniverse.org/api/subjects/?subject_set_id={subject_set}&page_size={BATCH_SIZE}&page={page}")
                 req.add_header('accept', "application/vnd.api+json; version=1")
                 req.add_header('content-type', "application/json")
                 data = json.loads(request.urlopen(req).read())
@@ -121,7 +122,7 @@ def get_subjects_from_subject_sets(subject_sets, n_subjects):
                 for subject in data['subjects']:
                     sub = {'subject_ID': subject['id']}
                     for key in subject['metadata'].keys():
-                        metai = change_type(subject['metadata'][key])
+                        metai = change_type(str(subject['metadata'][key]))
                         sub[key] = metai
                     sub['url'] = img_url(subject['locations'])
                     subjects.append(sub)
