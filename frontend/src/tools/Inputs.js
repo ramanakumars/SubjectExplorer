@@ -19,7 +19,42 @@ const parseValue = (value, type) => {
 	return value;
 }
 
-export class InputNumber extends React.Component {
+export function InputNumber({minValue, maxValue, value, text, name, type, onChange}) {
+	const [_value, setValue] = useState(value);
+	
+	var step = 1;
+	if (type.includes('float')) {
+		step = 0.01;
+	}
+
+	useEffect(() => {
+		onChange(_value);
+	}, [_value]);
+
+	const _parseChange = () => {
+		var value = parseValue(_value, type);
+		setValue(value);
+	}
+
+	return (
+		<span>
+			<label htmlFor={name}>{text}: </label>
+			<input type='number'
+				name={name}
+				onChange={(e) => setValue(e.target.value)}
+				onBlur={_parseChange}
+				onMouseOut={_parseChange}
+				value={_value}
+				min={minValue}
+				max={maxValue}
+				step={step}
+			/>
+		</span>
+	)
+
+}
+
+export class InputNumberOld extends React.Component {
 	constructor(props) {
 		super(props);
 
@@ -48,10 +83,10 @@ export class InputNumber extends React.Component {
 	render() {
 		return (
 			<span>
-				<label htmlFor={this.state.name}>{this.state.text}:</label>
-				<input type='number'
+				<label htmlFor={this.state.name}>{this.state.text}: </label>
+				<input type='text'
 					name={this.state.name}
-					onChange={this.onChange}
+					onMouseOut={this.onChange}
 					value={this.state.value}
 					min={this.state.minValue}
 					max={this.state.maxValue}
@@ -62,7 +97,7 @@ export class InputNumber extends React.Component {
 	}
 }
 
-export function Radio({ id, name, handleClick, checked }) {
+export function Radio({ id, name, checked }) {
 	return (
 		<span>
 			<input
@@ -71,8 +106,7 @@ export function Radio({ id, name, handleClick, checked }) {
 				className="plot-type"
 				id={id}
 				value={id}
-				onChange={handleClick}
-				checked={checked}
+				defaultChecked={checked}
 			/>
 			<label htmlFor={id} className="radio plot-type">
 				{name}
@@ -154,7 +188,7 @@ export function InputMultiRange({ minValue, maxValue, step, type, text, onChange
 
 	return (
 		<div className='slider'>
-			<label>{text}</label>
+			<label>{text}: </label>
 			<MultiRangeSlider
 				min={absMin}
 				max={absMax}
