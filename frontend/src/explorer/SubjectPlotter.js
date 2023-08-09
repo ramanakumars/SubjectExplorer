@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Plot from "react-plotly.js";
 
 export const blue = "#2e86c1";
@@ -71,7 +71,7 @@ export default function SubjectPlotter({ data, layout, subject_data, plot_type, 
 
     return (
         <>
-            {_data ? (
+            {(_data && layout) ? (
                 <Plot
                     data={_data}
                     layout={layout}

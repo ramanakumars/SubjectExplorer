@@ -29,7 +29,7 @@ export default function Explorer({id}) {
 	const [_subjects, setSubjects] = useState([]);
 	const [_subject_count, setSubjectCount] = useState(0);
 	const [_data, setData] = useState([]);
-	const [_filtered_data, setFilteredData] = useState([null, null]);
+	const [_filtered_data, setFilteredData] = useState([undefined, undefined]);
 	const [_layout, setLayout] = useState({});
 	const [_selected_data, setSelectedData] = useState([]);
 	const [_hover_data, setHoverData] = useState([]);
