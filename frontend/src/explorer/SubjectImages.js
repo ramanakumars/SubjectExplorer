@@ -4,30 +4,29 @@ import { LoadingPage } from '../util/LoadingPage'
 
 
 function download(content, fileName, mimeType) {
-        var a = document.createElement('a');
-        mimeType = mimeType || 'application/octet-stream';
+    var a = document.createElement('a');
+    mimeType = mimeType || 'application/octet-stream';
 
-        if (navigator.msSaveBlob) { // IE10
-            return navigator.msSaveBlob(new Blob([content], { type: mimeType }),     fileName);
-        } else if ('download' in a) { //html5 A[download]
-            var csvData = new Blob([content], { type: mimeType });
-            var csvUrl = URL.createObjectURL(csvData);
-            //a.href = 'data:' + mimeType + ',' + encodeURIComponent(content);
-            a.href = csvUrl;
-            a.setAttribute('download', fileName);
-            document.body.appendChild(a);
-            a.click();
-            return true;
-        } else { //do iframe dataURL download (old ch+FF):
-            var f = document.createElement('iframe');
-            document.body.appendChild(f);
-            f.src = 'data:' + mimeType + ',' + encodeURIComponent(content);
+    if (navigator.msSaveBlob) { // IE10
+        return navigator.msSaveBlob(new Blob([content], { type: mimeType }),     fileName);
+    } else if ('download' in a) { //html5 A[download]
+        var csvData = new Blob([content], { type: mimeType });
+        var csvUrl = URL.createObjectURL(csvData);
+        a.href = csvUrl;
+        a.setAttribute('download', fileName);
+        document.body.appendChild(a);
+        a.click();
+        return true;
+    } else { //do iframe dataURL download (old ch+FF):
+        var f = document.createElement('iframe');
+        document.body.appendChild(f);
+        f.src = 'data:' + mimeType + ',' + encodeURIComponent(content);
 
-            setTimeout(function() {
-                document.body.removeChild(f);
-            }, 333);
-            return true;
-        }
+        setTimeout(function() {
+            document.body.removeChild(f);
+        }, 333);
+        return true;
+    }
 }
 
 export default function SubjectImages({ subject_data, render_type }) {
