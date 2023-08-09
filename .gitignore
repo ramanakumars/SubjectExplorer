@@ -163,3 +163,7 @@ yarn-error.log*
 # secrets
 panoptes_username
 panoptes_password
+
+# data files
+*.json
+*.csv
