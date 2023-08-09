@@ -17,7 +17,7 @@ export function ChoosePlotType({ variables, handleSubmit }) {
 
 	const handleChoosePlotType = (event) => {
 		event.preventDefault();
-		var plot_type = event.target.id;
+		var plot_type = event.target.value;
 		setPlotType(plot_type);
 	}
 
@@ -36,17 +36,15 @@ export function ChoosePlotType({ variables, handleSubmit }) {
 	return (
 		<>
 			<h1>Choose the plot type</h1>
-			<div id="plot-type">
+			<div id="plot-type" onChange={handleChoosePlotType}>
 				<Radio
 					id='hist'
 					name='Histogram'
-					handleClick={handleChoosePlotType}
 					checked={_chosen==="hist"}
 				/>
 				<Radio
 					id='scatter'
 					name='Scatter plot'
-					handleClick={handleChoosePlotType}
 					checked={_chosen==="scatter"}
 				/>
 			</div>
